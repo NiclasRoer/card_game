@@ -4,22 +4,36 @@ from deck import Deck
 class Character:
     def __init__(self):
         self.deck = Deck()
+        self.reset_character()
+
+        # self.drawn_cards = []
+        # self.drawn_cards.extend(self.deck.draw(3))
+        # self.hand = []
+
+        # self.selected_card = None
+        # self.selected_card_position = None
+        self.deckbuilder_selected_card_key = None
+        # self.life = 100
+        # self.poison = 0
+        # self.shield = 0
+        # self.damage_value = 0
+
+        # self.mana = 1
+
+        self.enemy_card_start_time = 0
+        self.ENEMY_DISPLAY_TIME = 750
+
+    def reset_character(self):
         self.drawn_cards = []
         self.drawn_cards.extend(self.deck.draw(3))
         self.hand = []
-
         self.selected_card = None
         self.selected_card_position = None
-        self.deckbuilder_selected_card_key = None
         self.life = 100
         self.poison = 0
         self.shield = 0
         self.damage_value = 0
-
         self.mana = 1
-
-        self.enemy_card_start_time = 0
-        self.ENEMY_DISPLAY_TIME = 750
 
     def end_turn(self, enemy):
         enemy.life -= enemy.poison
@@ -48,7 +62,7 @@ class Character:
         if suit == 'Clubs':
             self.process_clubs(value, enemy)
         elif suit == 'Spades':
-            self.damage_value = value
+            self.process_spades(value)
         elif suit == 'Diamonds':
             self.process_diamonds(value, enemy)
         elif suit == 'Hearts':
@@ -62,8 +76,15 @@ class Character:
             self.damage_value = self.shield
 
     def process_clubs(self, value, enemy):
-        if value % 2:
-            enemy.poison += value
-        else:
-            self.poison = max(0, self.poison - (value-1))
+        enemy.poison += value
+        # if value % 2:
+        #     enemy.poison += value
+        # else:
+        #     self.poison = max(0, self.poison - (value-1))
 
+    def process_spades(self, value):
+        if value % 2:
+            self.damage_value = value
+        else:
+            new_cards = self.deck.draw(int(value / 2))
+            self.drawn_cards.extend(new_cards)

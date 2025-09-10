@@ -281,6 +281,47 @@ class UI:
         text_rect = value_text.get_rect(center=(x, y))
         self.screen.blit(value_text, text_rect)
 
+    def draw_mid_screen(self):
+        # Text for the screen
+        win_text = self.font.render("YOU WIN!", True, self.WHITE)
+
+        # Draw background and win message
+        self.screen.fill(self.BLACK)
+        self.screen.blit(win_text, (self.WIDTH // 2 - win_text.get_width() // 2, self.HEIGHT // 3))
+
+        # Define button size and position
+        button_width = 200
+        button_height = 50
+        self.next_game_button = pygame.Rect(self.WIDTH // 2 - button_width // 2, self.HEIGHT // 2 + 60, button_width,
+                                       button_height)
+        self.end_game_button = pygame.Rect(self.WIDTH // 2 - button_width // 2, self.HEIGHT // 2 + 120, button_width,
+                                      button_height)
+
+        # Button texts
+        next_game_text = self.font.render("Next Game", True, self.BLACK)
+        end_game_text = self.font.render("End Game", True, self.BLACK)
+
+        # Button colors
+        button_color = (100, 200, 100)  # Greenish
+        button_hover_color = (150, 250, 150)  # Lighter green
+
+        # Draw buttons
+        pygame.draw.rect(self.screen, button_color, self.next_game_button)
+        pygame.draw.rect(self.screen, button_color, self.end_game_button)
+
+        # Hover effect: change button color when mouse is over it
+        mouse_pos = pygame.mouse.get_pos()
+        if self.next_game_button.collidepoint(mouse_pos):
+            pygame.draw.rect(self.screen, button_hover_color, self.next_game_button)
+        if self.end_game_button.collidepoint(mouse_pos):
+            pygame.draw.rect(self.screen, button_hover_color, self.end_game_button)
+
+        # Render button texts
+        self.screen.blit(next_game_text, (self.next_game_button.x + (button_width - next_game_text.get_width()) // 2,
+                                          self.next_game_button.y + (button_height - next_game_text.get_height()) // 2))
+        self.screen.blit(end_game_text, (self.end_game_button.x + (button_width - end_game_text.get_width()) // 2,
+                                         self.end_game_button.y + (button_height - end_game_text.get_height()) // 2))
+
     def draw_end_screen(self, player_won):
         win_text = self.font.render(f"YOU {'WIN' if player_won else 'LOSE'}!", True, self.WHITE)
         sub_text = self.font.render("Press any key to exit...", True, self.WHITE)
