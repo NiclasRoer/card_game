@@ -55,7 +55,8 @@ class Deck:
 
 
     def load_deck(self, deck_filename):
-        with open(deck_filename, 'r', encoding='utf-8') as file:
+        filename = get_asset_path(deck_filename)
+        with open(filename, 'r', encoding='utf-8') as file:
             self.cards = [line.strip() for line in file]
         self.shuffle()
 

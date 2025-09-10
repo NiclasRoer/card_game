@@ -209,12 +209,17 @@ while running:
 
             elif player.mana < 0:
                 player_turn = not player_turn
-                enemy_card = enemy.deck.draw(1)
-                enemy.drawn_cards.extend(enemy_card)
+                for i in range(10):
+                    enemy_card = enemy.deck.draw(1)
+                    enemy.drawn_cards.extend(enemy_card)
+                    if len(enemy.drawn_cards) >= 6:
+                        enemy.drawn_cards = enemy.drawn_cards[1:]
+                print(len(enemy.drawn_cards))
                 enemy_turn_step = 1
                 if enemy_turn_step:
-                    enemy_card = enemy_card[0]
+                    enemy_card = enemy_card[0] if len(enemy_card) > 0 else ""
                     enemy.enemy_card_start_time = pygame.time.get_ticks()
+                player.end_turn(enemy)
 
     # Enemy turn
     else:
@@ -223,7 +228,7 @@ while running:
 
         if enemy_turn_step == 1:
             elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
-            if elapsed <= enemy.ENEMY_DISPLAY_TIME:
+            if elapsed <= enemy.ENEMY_DISPLAY_TIME and enemy_card != "":
                 card_key = card_name_to_filename(enemy_card)
                 card_img = enemy.deck.images.get(card_key)
                 if card_img:
@@ -239,7 +244,7 @@ while running:
             elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
             if elapsed <= enemy.ENEMY_DISPLAY_TIME:
                 if not enemy.selected_card:
-                    enemy.selected_card = random.choice(enemy.drawn_cards)
+                    enemy.selected_card = random.choice(enemy.drawn_cards) if len(enemy.drawn_cards) > 0 else ""
             else:
                 enemy_turn_step = 3
                 enemy.enemy_card_start_time = pygame.time.get_ticks()
@@ -271,6 +276,7 @@ while running:
             if len(player.drawn_cards) >= 6:
                 player.drawn_cards = player.drawn_cards[1:]
             player_turn = not player_turn
+            enemy.end_turn(player)
 
     if enemy.life <= 0 or player.life <= 0:
         break
