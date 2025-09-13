@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+from explainer import Tutorial
 
 def get_asset_path(relative_path):
     """ Get the absolute path to an asset, works for dev and for PyInstaller bundled exe """
@@ -35,6 +36,7 @@ class UI:
     def __init__(self, screen, width=1280, height=720):
         self.screen = screen
         self.font = pygame.font.SysFont(None, 32)
+        self.small_font = pygame.font.SysFont(None, 16)
 
         self.WIDTH = width
         self.HEIGHT = height
@@ -48,6 +50,7 @@ class UI:
         self.button_rect = pygame.Rect(0, 0, 150, 50)
         self.reverse_button_rect = pygame.Rect(0, 0, 150, 50)
         self.play_button_rect = pygame.Rect(0, 0, 150, 50)
+        self.tutorial_button_rect = pygame.Rect(0, 0, 150, 50)
 
         self.button_color = (70, 130, 180)
         self.button_hover_color = (100, 160, 210)
@@ -55,6 +58,7 @@ class UI:
         self.new_card_deck = None
         self.new_card_index = 0
         self.deckbuilder_index = None
+        self.tutorial = Tutorial()
 
         # Load and scale icons
         path = get_asset_path('board_game_icons/PNG/Default (64px)/skull.png')
@@ -91,16 +95,18 @@ class UI:
         self.display_fps()
 
         start_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 200, 200, 50) else self.BUTTON_COLOR
-        deck_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 300, 200, 50) else self.BUTTON_COLOR
-        loader_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 400, 200, 50) else self.BUTTON_COLOR
+        deck_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 275, 200, 50) else self.BUTTON_COLOR
+        loader_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 350, 200, 50) else self.BUTTON_COLOR
+        tutorial_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 425, 200, 50) else self.BUTTON_COLOR
         options_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 500, 200, 50) else self.BUTTON_COLOR
-        quit_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 600, 200, 50) else self.BUTTON_COLOR
+        quit_color = self.BUTTON_HOVER_COLOR if self.button_hover(150, 575, 200, 50) else self.BUTTON_COLOR
 
         self.draw_button("Start Game", 150, 200, 200, 50, start_color)
-        self.draw_button("Deckbuilder", 150, 300, 200, 50, deck_color)
-        self.draw_button("Load Deck", 150, 400, 200, 50, loader_color)
+        self.draw_button("Deckbuilder", 150, 275, 200, 50, deck_color)
+        self.draw_button("Load Deck", 150, 350, 200, 50, loader_color)
+        self.draw_button("Tutorial", 150, 425, 200, 50, tutorial_color)
         self.draw_button("Options", 150, 500, 200, 50, options_color)
-        self.draw_button("Quit", 150, 600, 200, 50, quit_color)
+        self.draw_button("Quit", 150, 575, 200, 50, quit_color)
 
     def draw_deck_builder(self, player):
         CARD_WIDTH = 50
@@ -145,6 +151,9 @@ class UI:
         card_img = player.deck.images.get(player.deckbuilder_selected_card_key)
         self.screen.blit(pygame.transform.scale(card_img, (150, 150)), (enlarged_x_pos, enlarged_y_pos))
 
+        rendered_text = self.font.render("x", True, self.BLACK)
+        self.screen.blit(rendered_text, (enlarged_x_pos+10, enlarged_y_pos+140))
+
         level_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos, 200, 50) else self.BUTTON_COLOR
         swap_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+50, 200, 50) else self.BUTTON_COLOR
         reverse_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+100, 200, 50) else self.BUTTON_COLOR
@@ -186,6 +195,13 @@ class UI:
                     if self.new_card_index > len(player.deck.cards) - 1:
                         self.new_card_index = 0
 
+                if self.button_hover(550, 600, 50, 50):
+                    player.deck.remove_card(self.deckbuilder_index)
+
+                if self.button_hover(1039, 600, 50, 50):
+                    player.deck.add_card(self.new_card_deck[self.new_card_index])
+
+                # player.deckbuilder_selected_card_key, self.deckbuilder_index, self.new_card_deck[self.new_card_index]
 
     def draw_swap_menu(self, player):
         enlarged_x_pos = self.screen.get_width() // 2 + 450 // 2  # Center horizontally
@@ -202,6 +218,18 @@ class UI:
         end_forward = pygame.Vector2(enlarged_x_pos + 325, enlarged_y_pos + 65)
         draw_arrow(self.screen, center_back, end_back, pygame.Color(0, 0, 0), 10, 20, 12)
         draw_arrow(self.screen, center_forward, end_forward, pygame.Color(0, 0, 0), 10, 20, 12)
+
+        rendered_text = self.font.render("+", True, self.BLACK)
+        self.screen.blit(rendered_text, (enlarged_x_pos+190, enlarged_y_pos+140))
+
+    def draw_tutorial(self, x, y, font=None):
+        for line in self.tutorial.tutorial_text:
+            if font == 'small':
+                rendered_text = self.small_font.render(line, True, self.BLACK)
+            else:
+                rendered_text = self.font.render(line, True, self.BLACK)
+            self.screen.blit(rendered_text, (x, y))
+            y += rendered_text.get_height() + 5
 
     def draw_game(self, player, enemy):
         screen = self.screen
@@ -274,6 +302,10 @@ class UI:
         self.play_button_rect.topright = (WIDTH - 200, HEIGHT - 140)
         color = self.button_hover_color if self.play_button_rect.collidepoint(mouse_pos) else self.button_color
         self.draw_button("Play", self.play_button_rect.x, self.play_button_rect.y, self.play_button_rect.width, self.play_button_rect.height, color)
+
+        self.tutorial_button_rect.topright = (WIDTH - 200, HEIGHT - 70)
+        color = self.button_hover_color if self.tutorial_button_rect.collidepoint(mouse_pos) else self.button_color
+        self.draw_button("Tutorial", self.tutorial_button_rect.x, self.tutorial_button_rect.y, self.tutorial_button_rect.width, self.tutorial_button_rect.height, color)
 
 
     def draw_value_text(self, font, text, x, y, color):

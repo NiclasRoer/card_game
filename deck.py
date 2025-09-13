@@ -21,8 +21,11 @@ class Deck:
         self.cards = self.cards[n:]
         return drawn
 
-    def put_back(self, card):
+    def add_card(self, card):
         self.cards.append(card)
+
+    def remove_card(self, card_index):
+        self.cards.pop(card_index)
 
     def load_card_images(self, path="card_images/PNG/Cards (medium)"):
         self.images = {}

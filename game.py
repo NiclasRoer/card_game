@@ -44,11 +44,15 @@ enemy = Character()
 ### MAIN MENU
 main_menu = True
 show_deck_builder = False
+show_tutorial = False
+
 while main_menu:
     ui.draw_main()
 
     if show_deck_builder:
         ui.draw_deck_builder(player)
+    elif show_tutorial:
+        ui.draw_tutorial(410, 10)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -61,19 +65,21 @@ while main_menu:
                 print("Start Game clicked")
                 main_menu = False
                 # Call the function to start the game (you can transition here)
-            elif ui.button_hover(150, 300, 200, 50):  # Deck
+            elif ui.button_hover(150, 275, 200, 50):  # Deck
                 print("Deckbuilder clicked")
                 show_deck_builder = not show_deck_builder
                 player.deckbuilder_selected_card_key = None
-            elif ui.button_hover(150, 400, 200, 50):
+            elif ui.button_hover(150, 350, 200, 50):
                 player.deck.load_deck('test_deck.txt')
                 player.drawn_cards = []
                 player.drawn_cards.extend(player.deck.draw(3))
                 print('Deck loaded')
+            elif ui.button_hover(150, 425, 200, 50):  # Options
+                print("Tutorial clicked")
+                show_tutorial = not show_tutorial
             elif ui.button_hover(150, 500, 200, 50):  # Options
                 print("Options clicked")
-                # You can create an options menu here
-            elif ui.button_hover(150, 600, 200, 50):  # Quit
+            elif ui.button_hover(150, 575, 200, 50):  # Quit
                 pygame.quit()
                 sys.exit()
 
@@ -102,6 +108,8 @@ while main_game:
         screen.fill((34, 139, 34))  # green table background
 
         ui.draw_game(player, enemy)
+        if show_tutorial:
+            ui.draw_tutorial(50, HEIGHT/2 + 50, font='small')
 
         center = pygame.Vector2(WIDTH / 2 - 350, 95 if not player_turn else 630)
         end = pygame.Vector2(WIDTH / 2 - 300, 95 if not player_turn else 630)
@@ -174,7 +182,7 @@ while main_game:
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
-                        player.deck.put_back('Jack of Spades')
+                        player.deck.add_card('Jack of Spades')
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if ui.button_rect.collidepoint(event.pos):
@@ -204,6 +212,9 @@ while main_game:
                             player.drawn_cards.remove(player.selected_card)
                             player.selected_card = None  # deselect immediately
                             selected = None
+
+                    elif ui.tutorial_button_rect.collidepoint(event.pos):
+                        show_tutorial = not show_tutorial
 
                     else:
                         # Check if a card box was clicked
