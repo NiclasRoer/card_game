@@ -83,6 +83,8 @@ class UI:
     def draw_button(self, text, x, y, width, height, color):
         pygame.draw.rect(self.screen, color, (x, y, width, height))
         label = self.font.render(text, True, self.BLACK)
+        if text == 'Save Deck':
+            label = self.small_font.render(text, True, self.BLACK)
         self.screen.blit(label, (x + (width - label.get_width()) // 2, y + (height - label.get_height()) // 2))
 
     # Check if mouse is over a button
@@ -141,6 +143,10 @@ class UI:
             self.card_modifier(player)
             self.draw_swap_menu(player)
 
+        else:
+            save_color = self.BUTTON_HOVER_COLOR if self.button_hover(self.WIDTH - 100, self.HEIGHT - 100, 50, 50) else self.BUTTON_COLOR
+            self.draw_button("Save Deck", self.WIDTH- 100, self.HEIGHT - 100, 50, 50, save_color)
+
     def card_modifier(self, player):
 
         if self.new_card_deck is None:
@@ -157,12 +163,12 @@ class UI:
         level_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos, 200, 50) else self.BUTTON_COLOR
         swap_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+50, 200, 50) else self.BUTTON_COLOR
         reverse_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+100, 200, 50) else self.BUTTON_COLOR
-        save_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+150, 200, 50) else self.BUTTON_COLOR
+        finish_color = self.BUTTON_HOVER_COLOR if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos+150, 200, 50) else self.BUTTON_COLOR
 
         self.draw_button("Level Up", enlarged_x_pos + 200, enlarged_y_pos, 200, 50, level_color)
         self.draw_button("Swap", enlarged_x_pos + 200, enlarged_y_pos+50, 200, 50, swap_color)
         self.draw_button("Reverse", enlarged_x_pos + 200, enlarged_y_pos+100, 200, 50, reverse_color)
-        self.draw_button("Save", enlarged_x_pos + 200, enlarged_y_pos+150, 200, 50, save_color)
+        self.draw_button("Finish", enlarged_x_pos + 200, enlarged_y_pos+150, 200, 50, finish_color)
 
         for event in pygame.event.get():  # Left mouse click
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -181,8 +187,9 @@ class UI:
                     if player.deckbuilder_selected_card_key in player.deck.images:
                         player.deck.invert_card_colors(player.deckbuilder_selected_card_key)
 
-                # SAVE
+                # FINISH
                 if self.button_hover(enlarged_x_pos + 200, enlarged_y_pos + 150, 200, 50):
+                    self.deckbuilder_index = None
                     player.deckbuilder_selected_card_key = None
 
                 # ARROW LEFT
@@ -197,6 +204,12 @@ class UI:
 
                 if self.button_hover(550, 600, 50, 50):
                     player.deck.remove_card(self.deckbuilder_index)
+                    if self.deckbuilder_index == len(player.deck.cards):
+                        self.deckbuilder_index = None
+                        player.deckbuilder_selected_card_key = None
+                    else:
+                        player.deckbuilder_selected_card_key = card_name_to_filename(player.deck.cards[self.deckbuilder_index])
+
 
                 if self.button_hover(1039, 600, 50, 50):
                     player.deck.add_card(self.new_card_deck[self.new_card_index])

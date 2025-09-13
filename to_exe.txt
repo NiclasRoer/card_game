@@ -2,6 +2,7 @@ If new asset, make sure to load with drawing.py get_asset_path()
 
 Add path to game.spec
     -> if it does not exist, in terminal python builder.py
+    -> ADD all paths to data=[]
     -> pyinstaller game.spec
 
 .exe in dist

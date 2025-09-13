@@ -57,11 +57,19 @@ class Deck:
         return [f"{rank} of {suit}" for suit in suits for rank in ranks]
 
 
-    def load_deck(self, deck_filename):
-        filename = get_asset_path(deck_filename)
-        with open(filename, 'r', encoding='utf-8') as file:
-            self.cards = [line.strip() for line in file]
-        self.shuffle()
+    def load_deck(self, deck_filename, force_root_dir=False):
+        filename = deck_filename if force_root_dir else get_asset_path(deck_filename)
+        if os.path.exists(filename):
+            with open(filename, 'r', encoding='utf-8') as file:
+                self.cards = [line.strip() for line in file]
+            self.shuffle()
+        else:
+            print('No such file "{}"'.format(filename))
+
+    def save_deck(self, deck_filename):
+        with open(deck_filename, "w") as file:
+            for item in self.cards:
+                file.write(item + "\n")
 
     def swap_card(self, card_key, card_index, new_card):
 

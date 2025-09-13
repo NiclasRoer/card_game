@@ -70,15 +70,17 @@ while main_menu:
                 show_deck_builder = not show_deck_builder
                 player.deckbuilder_selected_card_key = None
             elif ui.button_hover(150, 350, 200, 50):
-                player.deck.load_deck('test_deck.txt')
-                player.drawn_cards = []
-                player.drawn_cards.extend(player.deck.draw(3))
+                player.deck.load_deck('saved_deck.txt', force_root_dir=True)
                 print('Deck loaded')
             elif ui.button_hover(150, 425, 200, 50):  # Options
                 print("Tutorial clicked")
                 show_tutorial = not show_tutorial
             elif ui.button_hover(150, 500, 200, 50):  # Options
                 print("Options clicked")
+            elif ui.button_hover(WIDTH - 100, HEIGHT - 100, 50, 50) and show_deck_builder:
+                player.deck.save_deck('saved_deck.txt')
+                print('save deck')
+
             elif ui.button_hover(150, 575, 200, 50):  # Quit
                 pygame.quit()
                 sys.exit()
@@ -103,6 +105,7 @@ run_duel = True
 while main_game:
     player.reset_character()
     enemy.reset_character()
+    enemy.mana = 0
 
     while run_duel:
         screen.fill((34, 139, 34))  # green table background
