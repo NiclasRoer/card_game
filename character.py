@@ -6,19 +6,7 @@ class Character:
         self.deck = Deck()
         self.reset_character()
 
-        # self.drawn_cards = []
-        # self.drawn_cards.extend(self.deck.draw(3))
-        # self.hand = []
-
-        # self.selected_card = None
-        # self.selected_card_position = None
         self.deckbuilder_selected_card_key = None
-        # self.life = 100
-        # self.poison = 0
-        # self.shield = 0
-        # self.damage_value = 0
-
-        # self.mana = 1
 
         self.enemy_card_start_time = 0
         self.ENEMY_DISPLAY_TIME = 750

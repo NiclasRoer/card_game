@@ -4,6 +4,7 @@ import sys
 
 from drawing import UI, draw_arrow, card_name_to_filename
 from character import Character
+from animations import Animator
 
 
 def select_card(mouse_pos, last_cards, start_x, y_pos, box_width=100, box_height=145, spacing=10):
@@ -38,6 +39,7 @@ pygame.display.set_caption("Card Draw Game")
 font = pygame.font.SysFont(None, 32)
 
 ui = UI(screen)
+animator = Animator(screen)
 player = Character()
 enemy = Character()
 
@@ -140,12 +142,14 @@ while main_game:
             # Decide border color
             if i < len(last_cards) and last_cards[i] == player.selected_card and i == player.selected_card_position:
                 border_color = (255, 215, 0)  # highlight
+                animator.card_position = (start_x + i * (box_width + spacing), y_pos)
             else:
                 border_color = (0, 0, 0)
             pygame.draw.rect(screen, border_color, card_slot_rect, 3, border_radius=5)
 
             if i < len(enemy_last_cards) and enemy_last_cards[i] == enemy.selected_card:
                 border_color = (255, 215, 0)  # highlight
+                animator.card_position = (start_x + i * (box_width + spacing), 20)
             else:
                 border_color = (0, 0, 0)
             pygame.draw.rect(screen, border_color, enemy_card_slot_rect, 3, border_radius=5)
@@ -174,8 +178,18 @@ while main_game:
                     center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
                     screen.blit(center_img, center_rect)
 
-        ###
-        if player_turn:
+        if animator.animation_running:
+            elapsed = pygame.time.get_ticks() - player.enemy_card_start_time
+            if elapsed <= player.ENEMY_DISPLAY_TIME:
+                animator.play_card_animation()
+            else:
+                animator.animation_running = False
+
+                # Needed to step into the regular loop without an active event anymore
+                # custom_event = pygame.event.Event(pygame.USEREVENT + 1, data={"message": "Hello from custom event!"})
+                # pygame.event.post(custom_event)
+
+        elif player_turn:
 
             # --- Handle events
             for event in pygame.event.get():
@@ -215,6 +229,13 @@ while main_game:
                             player.drawn_cards.remove(player.selected_card)
                             player.selected_card = None  # deselect immediately
                             selected = None
+                            animator.animation_running = True
+
+                            animation_card_key = card_name_to_filename(played_card)
+                            animation_card_img = player.deck.images.get(animation_card_key)
+                            center_img = pygame.transform.scale(animation_card_img, (100, 145))
+                            animator.prepare_animation(center_img)
+                            player.enemy_card_start_time = pygame.time.get_ticks()
 
                     elif ui.tutorial_button_rect.collidepoint(event.pos):
                         show_tutorial = not show_tutorial
@@ -266,7 +287,20 @@ while main_game:
                     enemy_turn_step = 3
                     enemy.enemy_card_start_time = pygame.time.get_ticks()
 
+                    animation_card_key = card_name_to_filename(enemy.selected_card)
+                    animation_card_img = enemy.deck.images.get(animation_card_key)
+                    animator.prepare_animation(animation_card_img)
+
             elif enemy_turn_step == 3:
+                # ANIMATION
+                elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
+                if elapsed <= enemy.ENEMY_DISPLAY_TIME:
+                    animator.play_card_animation()
+                else:
+                    enemy_turn_step = 4
+                    enemy.enemy_card_start_time = pygame.time.get_ticks()
+
+            elif enemy_turn_step == 4:
                 elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
                 if elapsed <= enemy.ENEMY_DISPLAY_TIME:
                     if enemy.selected_card in enemy.drawn_cards:
@@ -276,18 +310,18 @@ while main_game:
                         enemy.selected_card = None  # deselect immediately
                         selected = None
                 else:
-                    enemy_turn_step = 4
-
-            elif enemy_turn_step == 4:
-                if enemy.mana < 0:
                     enemy_turn_step = 5
+
+            elif enemy_turn_step == 5:
+                if enemy.mana < 0:
+                    enemy_turn_step = 6
                 elif len(enemy.drawn_cards) == 0:
                         enemy.deck.draw(1)
                         enemy.mana -= 1
                 else:
                     enemy_turn_step = 1
 
-            if enemy_turn_step == 5:
+            if enemy_turn_step == 6:
                 new_cards = player.deck.draw(1)
                 player.drawn_cards.extend(new_cards)
                 if len(player.drawn_cards) >= 6:
