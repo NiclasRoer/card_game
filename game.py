@@ -192,10 +192,17 @@ while main_game:
                 animator.play_card_animation()
             else:
                 animator.animation_running = False
-
-                # Needed to step into the regular loop without an active event anymore
-                # custom_event = pygame.event.Event(pygame.USEREVENT + 1, data={"message": "Hello from custom event!"})
-                # pygame.event.post(custom_event)
+                if player.mana < 0:
+                    player_turn = not player_turn
+                    enemy_card = enemy.deck.draw(1)
+                    enemy.drawn_cards.extend(enemy_card)
+                    if len(enemy.drawn_cards) >= 6:
+                        enemy.drawn_cards = enemy.drawn_cards[1:]
+                    enemy_turn_step = 1
+                    if enemy_turn_step:
+                        enemy_card = enemy_card[0] if len(enemy_card) > 0 else ""
+                        enemy.enemy_card_start_time = pygame.time.get_ticks()
+                    player.end_turn(enemy)
 
         elif player_turn:
 
@@ -221,6 +228,8 @@ while main_game:
                         if player.selected_card not in player.drawn_cards:
                             selected_card = None
                             selected = None
+                        animator.animation_running = True
+                        player.enemy_card_start_time = 0
 
                     elif ui.reverse_button_rect.collidepoint(event.pos):
                         # Reverse colors of selected card
@@ -255,17 +264,6 @@ while main_game:
                             player.selected_card = selected
                             player.selected_card_position = index
 
-                elif player.mana < 0:
-                    player_turn = not player_turn
-                    enemy_card = enemy.deck.draw(1)
-                    enemy.drawn_cards.extend(enemy_card)
-                    if len(enemy.drawn_cards) >= 6:
-                        enemy.drawn_cards = enemy.drawn_cards[1:]
-                    enemy_turn_step = 1
-                    if enemy_turn_step:
-                        enemy_card = enemy_card[0] if len(enemy_card) > 0 else ""
-                        enemy.enemy_card_start_time = pygame.time.get_ticks()
-                    player.end_turn(enemy)
 
         # Enemy turn
         else:
