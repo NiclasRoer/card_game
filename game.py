@@ -131,6 +131,7 @@ while main_game:
         last_cards = player.drawn_cards[-5:]
         enemy_last_cards = enemy.drawn_cards[-5:]
 
+        # Draw Card Slots and cards
         for i in range(5):
             card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
             enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)
@@ -177,6 +178,13 @@ while main_game:
                     center_img = pygame.transform.scale(card_img, (200, 290))  # adjust size
                     center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
                     screen.blit(center_img, center_rect)
+
+        # Draw tooltips
+        for i in range(5):
+            if ui.button_hover(start_x + i * (box_width + spacing), y_pos, box_width, box_height):
+                ui.draw_tooltip(ui.tutorial.tool_tip)
+            if ui.button_hover(start_x + i * (box_width + spacing), 20, box_width, box_height):
+                ui.draw_tooltip(ui.tutorial.tool_tip)
 
         if animator.animation_running:
             elapsed = pygame.time.get_ticks() - player.enemy_card_start_time

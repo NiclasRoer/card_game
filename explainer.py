@@ -16,4 +16,4 @@ class Tutorial:
                               "           Even: Deal damage according to the cards value."]
 
     def create_tool_tip(self):
-        pass
+        self.tool_tip = "Tool Tip"

@@ -67,6 +67,18 @@ class UI:
         self.ui_shield = pygame.image.load(path)
         self.ui_poison = pygame.transform.scale(self.ui_poison, (20, 20))
         self.ui_shield = pygame.transform.scale(self.ui_shield, (20, 20))
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/hexagon_outline.png')
+        self.ui_mana = pygame.image.load(path)
+        self.ui_mana = pygame.transform.scale(self.ui_mana, (20, 20))
+        self.ui_exp = []
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/flask_empty.png')
+        self.ui_exp.append(pygame.image.load(path))
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/flask_half.png')
+        self.ui_exp.append(pygame.image.load(path))
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/flask_full.png')
+        self.ui_exp.append(pygame.image.load(path))
+        for i, icon in enumerate(self.ui_exp):
+            self.ui_exp[i] = pygame.transform.scale(icon, (20, 20))
 
         self.clock = pygame.time.Clock()
 
@@ -244,6 +256,12 @@ class UI:
             self.screen.blit(rendered_text, (x, y))
             y += rendered_text.get_height() + 5
 
+    def draw_tooltip(self, tool_tip):
+        mouse_pos = pygame.mouse.get_pos()
+        rendered_text = self.small_font.render(tool_tip, True, self.BLACK)
+        self.screen.blit(rendered_text, mouse_pos)
+
+
     def draw_game(self, player, enemy):
         screen = self.screen
         font = self.font
@@ -254,24 +272,24 @@ class UI:
 
         # --- Mana ---
         circle_radius = 10
-        circle_spacing = 25
+        circle_spacing = 9
         num_circles_player = player.mana
         num_circles_enemy = enemy.mana
 
-        # Draw the line of circles
         y = HEIGHT / 2 - circle_radius / 2 + 15
-        for i in range(num_circles_player):
-            x = 50 + i * circle_spacing
-            pygame.draw.circle(screen, (0, 0, 0), (x, y), circle_radius)
         pygame.draw.rect(screen, (0, 0, 0),
                          pygame.Rect(50, y, 15 * circle_spacing + circle_radius * 2, circle_radius * 2), 2)
+        for i in range(num_circles_player):
+            x = 50 + i * circle_spacing + 2 * int(i/2)
+            screen.blit(self.ui_mana, (x, y + (pow(-1, i) * 9)))
 
         y = HEIGHT / 2 - circle_radius / 2 - 15
-        for i in range(num_circles_enemy):
-            x = 50 + i * circle_spacing
-            pygame.draw.circle(screen, (0, 0, 0), (x, y), circle_radius)
         pygame.draw.rect(screen, (0, 0, 0),
                          pygame.Rect(50, y, 15 * circle_spacing + circle_radius * 2, circle_radius * 2), 2)
+        for i in range(num_circles_enemy):
+            x = 50 + i * circle_spacing + 2 * int(i/2)
+            screen.blit(self.ui_mana, (x, y + (pow(-1, i) * 9)))
+
 
         # --- Lifebars ---
         lifebar_player = pygame.Rect(0, 0, 30, player.life)
@@ -287,6 +305,10 @@ class UI:
 
         pygame.draw.rect(screen, (255, 255, 255), lifebar_player, border_radius=10)
         pygame.draw.rect(screen, (255, 255, 255), lifebar_enemy, border_radius=10)
+
+        # --- Exp bar ---
+        for i in range(3):
+            screen.blit(self.ui_exp[i], ((WIDTH - 600)//2, HEIGHT * 0.90 - i*30))
 
         # --- Player Text ---
         self.draw_value_text(font, str(player.life), lifebar_player.centerx, lifebar_player.bottom + 12, (255, 255, 255))
