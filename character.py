@@ -9,7 +9,7 @@ class Character:
         self.deckbuilder_selected_card_key = None
 
         self.enemy_card_start_time = 0
-        self.ENEMY_DISPLAY_TIME = 750
+        self.ENEMY_DISPLAY_TIME = 1000
 
     def reset_character(self):
         self.drawn_cards = []
