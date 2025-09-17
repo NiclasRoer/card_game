@@ -161,6 +161,23 @@ while main_game:
                 card_img = player.deck.images.get(card_key)
                 if card_img:
                     img_rect = card_img.get_rect(center=card_slot_rect.center)
+                    try:
+                        selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
+                    except:
+                        selected, index = selected, index
+                    if i < len(last_cards) and last_cards[
+                        i] == player.selected_card and i == player.selected_card_position:
+                        new_width = int(img_rect.width * 1.2)
+                        new_height = int(img_rect.height * 1.2)
+                        card_x, card_y = img_rect.center
+                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
+                        img_rect = card_img.get_rect(center=(card_x, card_y))
+                    elif index == i:
+                        new_width = int(img_rect.width * 1.2)
+                        new_height = int(img_rect.height * 1.2)
+                        card_x, card_y = img_rect.center
+                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
+                        img_rect = card_img.get_rect(center=(card_x, card_y))
                     screen.blit(card_img, img_rect)
 
             if i < len(enemy_last_cards):
@@ -170,7 +187,7 @@ while main_game:
                     img_rect = card_img.get_rect(center=enemy_card_slot_rect.center)
                     screen.blit(card_img, img_rect)
 
-            if played_card:
+            if played_card and not animator.animation_running and enemy_turn_step != 3 and enemy_turn_step != 4:
                 card_key = card_name_to_filename(played_card)
                 card_img = player.deck.images.get(card_key) if not player_turn else enemy.deck.images.get(card_key)
                 if card_img:
@@ -262,8 +279,12 @@ while main_game:
 
                         selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
                         if selected and selected in player.drawn_cards:
-                            player.selected_card = selected
-                            player.selected_card_position = index
+                            if selected == player.selected_card:
+                                player.selected_card = None
+                                player.selected_card_position = None
+                            else:
+                                player.selected_card = selected
+                                player.selected_card_position = index
 
 
         # Enemy turn
