@@ -1,11 +1,13 @@
 import pygame
 import random
 import os
-from drawing import get_asset_path
+from drawing import get_asset_path, filename_to_card_name, card_name_to_filename
 
 class Deck:
     def __init__(self):
         self.cards = self.create_new_deck()
+        self.reverse_flags = {}
+        self.create_reverse_lookup()
         self.asset_names = self.load_asset_names()
         self.images = {}
         self.load_card_images()
@@ -37,8 +39,11 @@ class Deck:
                 img = pygame.transform.scale(img, (100, 145))  # scale to fit boxes
                 self.images[key] = img
 
-    def invert_card_colors(self, card_key):
+    def invert_card_colors(self, card_key, card_name=None):
         """Return a new surface with inverted colors"""
+        if card_name is None:
+            card_name = filename_to_card_name(card_key)
+        self.reverse_flags[card_name] = not self.reverse_flags[card_name]
         card_img = self.images[card_key]
         inverted = pygame.Surface(card_img.get_size(), pygame.SRCALPHA)
         arr = pygame.surfarray.array3d(card_img)
@@ -56,20 +61,32 @@ class Deck:
                  "Jack", "Queen", "King", "Ace"]
         return [f"{rank} of {suit}" for suit in suits for rank in ranks]
 
+    def create_reverse_lookup(self, cards=None):
+        for card in self.cards:
+            self.reverse_flags[card] = False
 
     def load_deck(self, deck_filename, force_root_dir=False):
         filename = deck_filename if force_root_dir else get_asset_path(deck_filename)
+
         if os.path.exists(filename):
             with open(filename, 'r', encoding='utf-8') as file:
-                self.cards = [line.strip() for line in file]
+                self.cards = []
+                self.reverse_flags = {}
+                for line in file:
+                    card_name, flag = line.strip().split(',')
+                    self.cards.append(card_name)
+                    self.reverse_flags[card_name] = flag == 'True'
+                    if self.reverse_flags[card_name]:
+                        self.invert_card_colors(card_name_to_filename(card_name))
             self.shuffle()
         else:
-            print('No such file "{}"'.format(filename))
+            print(f'No such file "{filename}"')
 
     def save_deck(self, deck_filename):
         with open(deck_filename, "w") as file:
             for item in self.cards:
-                file.write(item + "\n")
+                reversed = self.reverse_flags[item]
+                file.write(f"{item},{reversed}\n")
 
     def swap_card(self, card_key, card_index, new_card):
 

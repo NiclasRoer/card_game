@@ -32,6 +32,25 @@ def card_name_to_filename(card_name):
     rank, _, suit = card_name.partition(" of ")
     return f"card_{suit_map[suit]}_{rank_map[rank]}"
 
+def filename_to_card_name(filename):
+    """Convert 'card_spades_A' -> 'Ace of Spades'."""
+    rank_map_reverse = {
+        "02": "2", "03": "3", "04": "4", "05": "5", "06": "6", "07": "7", "08": "8", "09": "9", "10": "10",
+        "J": "Jack",
+        "Q": "Queen",
+        "K": "King",
+        "A": "Ace"
+    }
+    suit_map_reverse = {
+        "hearts": "Hearts",
+        "diamonds": "Diamonds",
+        "clubs": "Clubs",
+        "spades": "Spades"
+    }
+
+    _, suit, rank = filename.split('_')
+    return f"{rank_map_reverse[rank]} of {suit_map_reverse[suit]}"
+
 class UI:
     def __init__(self, screen, width=1280, height=720):
         self.screen = screen

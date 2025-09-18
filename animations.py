@@ -20,7 +20,6 @@ class Animator:
         self.rect = self.image.get_rect(topleft=self.card_position)
         self.original_rect = self.image.get_rect(topleft=self.card_position)
         self.animation_runtime = runtime
-        print(self.animation_runtime, runtime)
 
     def play_card_animation(self, timestamp):
 
@@ -44,8 +43,8 @@ class Animator:
 
         # Move the image along the normalized vector (dx_normalized, dy_normalized) with a fixed speed
         if timestamp > self.animation_runtime / 2:
-            self.rect.x += dx_normalized * 9
-            self.rect.y += dy_normalized * 9
+            self.rect.x += dx_normalized * 10
+            self.rect.y += dy_normalized * 10
 
         # Blit the scaled image to the screen
         # self.screen.fill((0, 0, 0))  # Fill the screen with black or transparent background

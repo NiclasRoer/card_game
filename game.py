@@ -253,7 +253,7 @@ while main_game:
                         if player.selected_card:
                             card_key = card_name_to_filename(player.selected_card)
                             if card_key in player.deck.images:
-                                player.deck.invert_card_colors(card_key)
+                                player.deck.invert_card_colors(card_key, player.selected_card)
 
                     elif ui.play_button_rect.collidepoint(event.pos):
                         # Play the selected card
