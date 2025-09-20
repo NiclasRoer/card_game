@@ -11,7 +11,7 @@ class Deck:
         self.asset_names = self.load_asset_names()
         self.images = {}
         self.load_card_images()
-        self.shuffle()
+        # self.shuffle()
 
     def shuffle(self):
         random.shuffle(self.cards)
@@ -78,7 +78,7 @@ class Deck:
                     self.reverse_flags[card_name] = flag == 'True'
                     if self.reverse_flags[card_name]:
                         self.invert_card_colors(card_name_to_filename(card_name))
-            self.shuffle()
+            # self.shuffle()
         else:
             print(f'No such file "{filename}"')
 

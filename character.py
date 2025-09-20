@@ -4,16 +4,15 @@ from deck import Deck
 class Character:
     def __init__(self):
         self.deck = Deck()
-        self.reset_character()
+        self.reset_character(begin_duel=False)
 
         self.deckbuilder_selected_card_key = None
 
         self.enemy_card_start_time = 0
         self.ENEMY_DISPLAY_TIME = 1000
 
-    def reset_character(self):
+    def reset_character(self, begin_duel=True):
         self.drawn_cards = []
-        self.drawn_cards.extend(self.deck.draw(3))
         self.hand = []
         self.selected_card = None
         self.selected_card_position = None
@@ -22,6 +21,9 @@ class Character:
         self.shield = 0
         self.damage_value = 0
         self.mana = 1
+        if begin_duel:
+            self.deck.shuffle()
+            self.drawn_cards.extend(self.deck.draw(3))
 
     def end_turn(self, enemy):
         enemy.life -= enemy.poison
