@@ -99,6 +99,18 @@ class UI:
         for i, icon in enumerate(self.ui_exp):
             self.ui_exp[i] = pygame.transform.scale(icon, (20, 20))
 
+        self.condition_icons = {}
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/sword.png')
+        icon = pygame.image.load(path)
+        self.condition_icons['Upgrade'] = pygame.transform.scale(icon, (20, 20))
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/cards_skull.png')
+        icon = pygame.image.load(path)
+        self.condition_icons['Corrosion'] = pygame.transform.scale(icon, (20, 20))
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/fire.png')
+        icon = pygame.image.load(path)
+        self.condition_icons['Overclock'] = pygame.transform.scale(icon, (20, 20))
+
+
         self.clock = pygame.time.Clock()
 
     def display_fps(self):
@@ -328,6 +340,21 @@ class UI:
         # --- Exp bar ---
         for i in range(3):
             screen.blit(self.ui_exp[i], ((WIDTH - 600)//2, HEIGHT * 0.90 - i*30))
+
+        # --- Conditions ---
+        for i, condition in enumerate(player.conditions.items()):
+            key, value = condition
+            screen.blit(self.condition_icons[key], ((WIDTH - 525) // 2 + i * 35, HEIGHT * 0.74))
+            if value > 0:
+                text = self.small_font.render(str(value), True, self.BLACK)
+                self.screen.blit(text, ((WIDTH - 525) // 2 + i * 35, HEIGHT * 0.73))
+
+        for i, condition in enumerate(enemy.conditions.items()):
+            key, value = condition
+            screen.blit(self.condition_icons[key], ((WIDTH - 525) // 2 + i * 35, HEIGHT * 0.24))
+            if value > 0:
+                text = self.small_font.render(str(value), True, self.BLACK)
+                self.screen.blit(text, ((WIDTH - 525) // 2 + i * 35, HEIGHT * 0.23))
 
         # --- Player Text ---
         self.draw_value_text(font, str(player.life), lifebar_player.centerx, lifebar_player.bottom + 12, (255, 255, 255))

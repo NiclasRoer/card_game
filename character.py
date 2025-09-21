@@ -5,11 +5,15 @@ class Character:
     def __init__(self):
         self.deck = Deck()
         self.reset_character(begin_duel=False)
+        self.process_conditions()
 
         self.deckbuilder_selected_card_key = None
 
         self.enemy_card_start_time = 0
         self.ENEMY_DISPLAY_TIME = 1000
+
+    def process_conditions(self):
+        self.conditions = {'Overclock': 0, 'Corrosion': 0, 'Upgrade': 0}
 
     def reset_character(self, begin_duel=True):
         self.drawn_cards = []
@@ -49,14 +53,27 @@ class Character:
         value = rank_map.get(rank_str, None)
 
         self.mana -= value
-        if suit == 'Clubs':
-            self.process_clubs(value, enemy)
-        elif suit == 'Spades':
-            self.process_spades(value)
-        elif suit == 'Diamonds':
-            self.process_diamonds(value, enemy)
-        elif suit == 'Hearts':
-            self.life += value
+
+        if self.deck.reverse_flags[card_str]:
+            print('Reverse flag')
+            if suit == 'Clubs':
+                self.process_clubs(value, enemy)
+            elif suit == 'Spades':
+                self.process_spades(value)
+            elif suit == 'Diamonds':
+                self.process_diamonds(value, enemy)
+            elif suit == 'Hearts':
+                self.conditions['Overclock'] = value + self.conditions['Overclock']
+        else:
+            print('No Reverse flag')
+            if suit == 'Clubs':
+                self.process_clubs(value, enemy)
+            elif suit == 'Spades':
+                self.process_spades(value)
+            elif suit == 'Diamonds':
+                self.process_diamonds(value, enemy)
+            elif suit == 'Hearts':
+                self.life += value
 
     def process_diamonds(self, value, enemy):
         if value % 2:
@@ -67,10 +84,6 @@ class Character:
 
     def process_clubs(self, value, enemy):
         enemy.poison += value
-        # if value % 2:
-        #     enemy.poison += value
-        # else:
-        #     self.poison = max(0, self.poison - (value-1))
 
     def process_spades(self, value):
         if value % 2:
