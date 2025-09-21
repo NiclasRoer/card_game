@@ -68,6 +68,9 @@ a = Analysis(
         ('board_game_icons/PNG/Default (64px)/flask_empty.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/flask_half.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/flask_full.png', 'board_game_icons/PNG/Default (64px)'),
+        ('board_game_icons/PNG/Default (64px)/sword.png', 'board_game_icons/PNG/Default (64px)'),
+        ('board_game_icons/PNG/Default (64px)/cards_skull.png', 'board_game_icons/PNG/Default (64px)'),
+        ('board_game_icons/PNG/Default (64px)/fire.png', 'board_game_icons/PNG/Default (64px)'),
 
     ],
     hiddenimports=[],
