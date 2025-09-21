@@ -1,4 +1,5 @@
 from deck import Deck
+import random
 
 
 class Character:
@@ -55,17 +56,17 @@ class Character:
         self.mana -= value
 
         if self.deck.reverse_flags[card_str]:
-            print('Reverse flag')
             if suit == 'Clubs':
-                self.process_clubs(value, enemy)
+                self.conditions['Corrosion'] = value + self.conditions['Corrosion']
             elif suit == 'Spades':
-                self.process_spades(value)
+                discard_card = random.choice(enemy.drawn_cards) if len(enemy.drawn_cards) > 0 else ""
+                index = enemy.drawn_cards.index(discard_card)
+                enemy.drawn_cards.pop(index)
             elif suit == 'Diamonds':
                 self.process_diamonds(value, enemy)
             elif suit == 'Hearts':
                 self.conditions['Overclock'] = value + self.conditions['Overclock']
         else:
-            print('No Reverse flag')
             if suit == 'Clubs':
                 self.process_clubs(value, enemy)
             elif suit == 'Spades':
