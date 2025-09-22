@@ -187,14 +187,14 @@ while main_game:
                     img_rect = card_img.get_rect(center=enemy_card_slot_rect.center)
                     screen.blit(card_img, img_rect)
 
-            if played_card and not animator.animation_running and enemy_turn_step != 3 and enemy_turn_step != 4:
-                card_key = card_name_to_filename(played_card)
-                card_img = player.deck.images.get(card_key) if not player_turn else enemy.deck.images.get(card_key)
-                if card_img:
-                    # Scale to fit nicely in the center
-                    center_img = pygame.transform.scale(card_img, (200, 290))  # adjust size
-                    center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-                    screen.blit(center_img, center_rect)
+            # if played_card and not animator.animation_running and enemy_turn_step != 3 and enemy_turn_step != 4:
+            #     card_key = card_name_to_filename(played_card)
+            #     card_img = player.deck.images.get(card_key) if not player_turn else enemy.deck.images.get(card_key)
+            #     if card_img:
+            #         # Scale to fit nicely in the center
+            #         center_img = pygame.transform.scale(card_img, (200, 290))  # adjust size
+            #         center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            #         screen.blit(center_img, center_rect)
 
         # Draw tooltips
         for i in range(5):
@@ -209,6 +209,11 @@ while main_game:
                 animator.play_card_animation(elapsed)
             else:
                 animator.animation_running = False
+                if played_card:
+                    player.turn_played_cards.append(played_card)
+                played_card = None
+
+                # End Turn
                 if player.mana < 0:
                     player_turn = not player_turn
                     enemy_card = enemy.deck.draw(1)
@@ -245,8 +250,8 @@ while main_game:
                         if player.selected_card not in player.drawn_cards:
                             selected_card = None
                             selected = None
-                        animator.animation_running = True
-                        player.enemy_card_start_time = 0
+                        animator.animation_running = player.mana < 0
+                        # player.enemy_card_start_time = 0
 
                     elif ui.reverse_button_rect.collidepoint(event.pos):
                         # Reverse colors of selected card
@@ -261,6 +266,7 @@ while main_game:
                         if player.selected_card in player.drawn_cards:
                             player.calc_damage(played_card, enemy)
                             player.drawn_cards.remove(player.selected_card)
+
                             player.selected_card = None  # deselect immediately
                             selected = None
                             animator.animation_running = True
@@ -268,7 +274,7 @@ while main_game:
                             animation_card_key = card_name_to_filename(played_card)
                             animation_card_img = player.deck.images.get(animation_card_key)
                             center_img = pygame.transform.scale(animation_card_img, (100, 145))
-                            animator.prepare_animation(center_img, player.ENEMY_DISPLAY_TIME)
+                            animator.prepare_animation(center_img, player.ENEMY_DISPLAY_TIME, len(player.turn_played_cards), player_turn)
                             player.enemy_card_start_time = pygame.time.get_ticks()
 
                     elif ui.tutorial_button_rect.collidepoint(event.pos):
@@ -317,7 +323,7 @@ while main_game:
 
                     animation_card_key = card_name_to_filename(enemy.selected_card)
                     animation_card_img = enemy.deck.images.get(animation_card_key)
-                    animator.prepare_animation(animation_card_img, enemy.ENEMY_DISPLAY_TIME)
+                    animator.prepare_animation(animation_card_img, enemy.ENEMY_DISPLAY_TIME, len(enemy.turn_played_cards), player_turn)
 
             elif enemy_turn_step == 3:
                 elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
@@ -343,6 +349,8 @@ while main_game:
                     animator.play_card_animation(elapsed)
                 else:
                     enemy_turn_step = 5
+                    enemy.turn_played_cards.append(played_card)
+                    played_card = None
                     # enemy.enemy_card_start_time = pygame.time.get_ticks()
 
             elif enemy_turn_step == 5:

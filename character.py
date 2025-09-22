@@ -19,6 +19,8 @@ class Character:
     def reset_character(self, begin_duel=True):
         self.drawn_cards = []
         self.hand = []
+        self.turn_played_cards = []
+        self.discarded_cards = []
         self.selected_card = None
         self.selected_card_position = None
         self.life = 100
@@ -41,6 +43,8 @@ class Character:
             enemy.mana = abs(self.mana)
 
         self.damage_value = 0
+        enemy.discarded_cards.extend(self.turn_played_cards)
+        enemy.turn_played_cards = []
 
     def calc_damage(self, card_str, enemy):
         rank_str, suit = card_str.split(" of ")

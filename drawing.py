@@ -366,6 +366,25 @@ class UI:
         self.draw_value_text(font, str(enemy.poison), lifebar_enemy.right + 50, lifebar_enemy.top - 12, (0, 0, 0))
         self.draw_value_text(font, str(enemy.shield), lifebar_enemy.right + 100, lifebar_enemy.top - 12, (0, 0, 0))
 
+        # -- Played Cards ---
+        if player.turn_played_cards:
+            for i, card in enumerate(player.turn_played_cards):
+                card_key = card_name_to_filename(card)
+                card_img = player.deck.images.get(card_key)
+
+                center_img = pygame.transform.scale(card_img, (100, 145))  # adjust size
+                center_rect = center_img.get_rect(center=(WIDTH // 3 + 40*i, HEIGHT // 2 + 100))
+                screen.blit(center_img, center_rect)
+
+        if enemy.turn_played_cards:
+            for i, card in enumerate(enemy.turn_played_cards):
+                card_key = card_name_to_filename(card)
+                card_img = enemy.deck.images.get(card_key)
+
+                center_img = pygame.transform.scale(card_img, (100, 145))  # adjust size
+                center_rect = center_img.get_rect(center=(WIDTH // 3 + 40*i, HEIGHT // 2 - 100))
+                screen.blit(center_img, center_rect)
+
         # --- Buttons ---
         mouse_pos = pygame.mouse.get_pos()
 
