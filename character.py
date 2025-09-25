@@ -61,15 +61,13 @@ class Character:
 
         if self.deck.reverse_flags[card_str]:
             if suit == 'Clubs':
-                self.conditions['Corrosion'] = value + self.conditions['Corrosion']
+                self.process_clubs_reverse(value)
             elif suit == 'Spades':
-                discard_card = random.choice(enemy.drawn_cards) if len(enemy.drawn_cards) > 0 else ""
-                index = enemy.drawn_cards.index(discard_card)
-                enemy.drawn_cards.pop(index)
+                self.process_spades_reverse(enemy)
             elif suit == 'Diamonds':
-                self.process_diamonds(value, enemy)
+                self.process_diamonds_reverse(value, enemy)
             elif suit == 'Hearts':
-                self.conditions['Overclock'] = value + self.conditions['Overclock']
+                self.process_hearts_reverse(value)
         else:
             if suit == 'Clubs':
                 self.process_clubs(value, enemy)
@@ -78,7 +76,7 @@ class Character:
             elif suit == 'Diamonds':
                 self.process_diamonds(value, enemy)
             elif suit == 'Hearts':
-                self.life += value
+                self.process_hearts(value)
 
     def process_diamonds(self, value, enemy):
         if value % 2:
@@ -96,3 +94,25 @@ class Character:
         else:
             new_cards = self.deck.draw(int(value / 2))
             self.drawn_cards.extend(new_cards)
+
+    def process_hearts(self, value):
+        self.life += value
+
+
+    def process_diamonds_reverse(self, value, enemy):
+        if value % 2:
+            self.shield += 2 * value
+        else:
+            enemy.shield = max(0, enemy.shield - value)
+            self.damage_value = self.shield
+
+    def process_clubs_reverse(self, value):
+        self.conditions['Corrosion'] = value + self.conditions['Corrosion']
+
+    def process_spades_reverse(self, enemy):
+        discard_card = random.choice(enemy.drawn_cards) if len(enemy.drawn_cards) > 0 else ""
+        index = enemy.drawn_cards.index(discard_card)
+        enemy.drawn_cards.pop(index)
+
+    def process_hearts_reverse(self, value):
+        self.conditions['Overclock'] = value + self.conditions['Overclock']

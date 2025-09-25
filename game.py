@@ -5,6 +5,7 @@ import sys
 from drawing import UI, draw_arrow, card_name_to_filename
 from character import Character
 from animations import Animator
+from sounds import Sound_Manager
 
 
 def select_card(mouse_pos, last_cards, start_x, y_pos, box_width=100, box_height=145, spacing=10):
@@ -38,6 +39,7 @@ pygame.display.set_caption("Card Draw Game")
 
 font = pygame.font.SysFont(None, 32)
 
+sound_manager = Sound_Manager(pygame)
 ui = UI(screen)
 animator = Animator(screen)
 player = Character()
@@ -173,6 +175,7 @@ while main_game:
                         card_img = pygame.transform.scale(card_img, (new_width, new_height))
                         img_rect = card_img.get_rect(center=(card_x, card_y))
                     elif index == i:
+                        sound_manager.play_card_hover(i)
                         new_width = int(img_rect.width * 1.2)
                         new_height = int(img_rect.height * 1.2)
                         card_x, card_y = img_rect.center
@@ -218,6 +221,7 @@ while main_game:
                     player_turn = not player_turn
                     enemy_card = enemy.deck.draw(1)
                     enemy.drawn_cards.extend(enemy_card)
+                    sound_manager.play_draw()
                     if len(enemy.drawn_cards) >= 6:
                         enemy.drawn_cards = enemy.drawn_cards[1:]
                     enemy_turn_step = 1
@@ -244,6 +248,7 @@ while main_game:
                         player.mana -= 1
                         new_cards = player.deck.draw(1)
                         player.drawn_cards.extend(new_cards)
+                        sound_manager.play_draw()
                         if len(player.drawn_cards) >= 6:
                             player.drawn_cards = player.drawn_cards[1:]
                         # Deselect if selected card is no longer in hand
@@ -285,6 +290,7 @@ while main_game:
 
                         selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
                         if selected and selected in player.drawn_cards:
+                            sound_manager.play_card_select()
                             if selected == player.selected_card:
                                 player.selected_card = None
                                 player.selected_card_position = None
@@ -292,6 +298,8 @@ while main_game:
                                 player.selected_card = selected
                                 player.selected_card_position = index
 
+            # Sound timing
+            sound_manager.reactive_hover()
 
         # Enemy turn
         else:
