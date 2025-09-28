@@ -56,7 +56,7 @@ while main_menu:
     if show_deck_builder:
         ui.draw_deck_builder(player)
     elif show_tutorial:
-        ui.draw_tutorial(410, 10)
+        ui.draw_tutorial_text(410, 10)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -92,6 +92,19 @@ while main_menu:
     pygame.display.flip()
     ui.clock.tick(60)
 
+player = Character()
+enemy = Character()
+# player.deck.load_deck('')
+# enemy.deck.load_deck('')
+while True:
+    screen.fill((34, 34, 34))  # green table background
+    ui.draw_tutorial_duel(player, enemy)
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if ui.button_hover(150, 500, 200, 50):  # Start Game
+            print('Tutorial ended')
+            break
+    pygame.display.flip()
+
 ### MAIN GAME
 # player.deck.load_deck('test_deck.txt')
 
@@ -116,7 +129,7 @@ while main_game:
 
         ui.draw_game(player, enemy)
         if show_tutorial:
-            ui.draw_tutorial(50, HEIGHT/2 + 50, font='small')
+            ui.draw_tutorial_text(50, HEIGHT / 2 + 50, font='small')
 
         center = pygame.Vector2(WIDTH / 2 - 350, 95 if not player_turn else 630)
         end = pygame.Vector2(WIDTH / 2 - 300, 95 if not player_turn else 630)

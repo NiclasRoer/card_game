@@ -3,6 +3,7 @@ import sys
 import os
 from explainer import Tutorial
 
+
 def get_asset_path(relative_path):
     """ Get the absolute path to an asset, works for dev and for PyInstaller bundled exe """
     if hasattr(sys, '_MEIPASS'):
@@ -278,7 +279,7 @@ class UI:
         rendered_text = self.font.render("+", True, self.BLACK)
         self.screen.blit(rendered_text, (enlarged_x_pos+190, enlarged_y_pos+140))
 
-    def draw_tutorial(self, x, y, font=None):
+    def draw_tutorial_text(self, x, y, font=None):
         for line in self.tutorial.tutorial_text:
             if font == 'small':
                 rendered_text = self.small_font.render(line, True, self.BLACK)
@@ -286,6 +287,18 @@ class UI:
                 rendered_text = self.font.render(line, True, self.BLACK)
             self.screen.blit(rendered_text, (x, y))
             y += rendered_text.get_height() + 5
+
+    def draw_tutorial_duel(self, tutorial_player, tutorial_enemy):
+        self.draw_game(tutorial_player, tutorial_enemy)
+
+        # highlight_rect = pygame.Rect(200, 150, 400, 300)
+        # highlight_color = (0, 255, 0, 100)  # Semi-transparent green (R, G, B, Alpha)
+        # highlight_surface = pygame.Surface((highlight_rect.width, highlight_rect.height))
+        # highlight_surface.set_alpha(100)  # Set transparency
+        # highlight_surface.fill(highlight_color)
+        # self.screen.blit(highlight_surface, (highlight_rect.x, highlight_rect.y))
+
+
 
     def draw_tooltip(self, tool_tip):
         mouse_pos = pygame.mouse.get_pos()
