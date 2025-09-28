@@ -3,6 +3,7 @@ import sys
 import os
 from explainer import Tutorial
 
+
 def get_asset_path(relative_path):
     """ Get the absolute path to an asset, works for dev and for PyInstaller bundled exe """
     if hasattr(sys, '_MEIPASS'):
@@ -78,6 +79,7 @@ class UI:
         self.new_card_index = 0
         self.deckbuilder_index = None
         self.tutorial = Tutorial()
+        self.tutorial_step = 0
 
         # Load and scale icons
         path = get_asset_path('board_game_icons/PNG/Default (64px)/skull.png')
@@ -278,7 +280,7 @@ class UI:
         rendered_text = self.font.render("+", True, self.BLACK)
         self.screen.blit(rendered_text, (enlarged_x_pos+190, enlarged_y_pos+140))
 
-    def draw_tutorial(self, x, y, font=None):
+    def draw_tutorial_text(self, x, y, font=None):
         for line in self.tutorial.tutorial_text:
             if font == 'small':
                 rendered_text = self.small_font.render(line, True, self.BLACK)
@@ -287,13 +289,25 @@ class UI:
             self.screen.blit(rendered_text, (x, y))
             y += rendered_text.get_height() + 5
 
+    def draw_tutorial_duel(self, tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index):
+        self.draw_game(tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index)
+
+        highlight_rect = pygame.Rect(200*self.tutorial_step, 150, 50, 50)
+        highlight_color = (255, 255, 255, 200)  # Semi-transparent green (R, G, B, Alpha)
+        highlight_surface = pygame.Surface((highlight_rect.width, highlight_rect.height))
+        highlight_surface.set_alpha(80)  # Set transparency
+        highlight_surface.fill(highlight_color)
+        self.screen.blit(highlight_surface, (highlight_rect.x, highlight_rect.y))
+
+
+
     def draw_tooltip(self, tool_tip):
         mouse_pos = pygame.mouse.get_pos()
         rendered_text = self.small_font.render(tool_tip, True, self.BLACK)
         self.screen.blit(rendered_text, mouse_pos)
 
 
-    def draw_game(self, player, enemy):
+    def draw_game(self, player, enemy, animator, sound_manager, select_card, event, selected, index):
         screen = self.screen
         font = self.font
         WIDTH = self.WIDTH
@@ -384,6 +398,78 @@ class UI:
                 center_img = pygame.transform.scale(card_img, (100, 145))  # adjust size
                 center_rect = center_img.get_rect(center=(WIDTH // 3 + 40*i, HEIGHT // 2 - 100))
                 screen.blit(center_img, center_rect)
+
+        # --- Card Slots ---
+        box_width = 100
+        box_height = 145
+        spacing = 10
+        start_x = (WIDTH - (5 * box_width + 4 * spacing)) // 2
+        y_pos = HEIGHT - box_height - 20
+
+        last_cards = player.drawn_cards[-5:]
+        enemy_last_cards = enemy.drawn_cards[-5:]
+        for i in range(5):
+            card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
+            enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)
+
+            # Draw empty box
+            pygame.draw.rect(screen, (200, 200, 200), card_slot_rect, border_radius=5)
+            pygame.draw.rect(screen, (200, 200, 200), enemy_card_slot_rect, border_radius=5)
+
+            # Decide border color
+            if i < len(last_cards) and last_cards[i] == player.selected_card and i == player.selected_card_position:
+                border_color = (255, 215, 0)  # highlight
+                animator.card_position = (start_x + i * (box_width + spacing), y_pos)
+            else:
+                border_color = (0, 0, 0)
+            pygame.draw.rect(screen, border_color, card_slot_rect, 3, border_radius=5)
+
+            if i < len(enemy_last_cards) and enemy_last_cards[i] == enemy.selected_card:
+                border_color = (255, 215, 0)  # highlight
+                animator.card_position = (start_x + i * (box_width + spacing), 20)
+            else:
+                border_color = (0, 0, 0)
+            pygame.draw.rect(screen, border_color, enemy_card_slot_rect, 3, border_radius=5)
+
+            # Draw card image if it exists
+            if i < len(last_cards):
+                card_key = card_name_to_filename(last_cards[i])
+                card_img = player.deck.images.get(card_key)
+                if card_img:
+                    img_rect = card_img.get_rect(center=card_slot_rect.center)
+                    try:
+                        selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
+                    except:
+                        selected, index = selected, index
+                    if i < len(last_cards) and last_cards[
+                        i] == player.selected_card and i == player.selected_card_position:
+                        new_width = int(img_rect.width * 1.2)
+                        new_height = int(img_rect.height * 1.2)
+                        card_x, card_y = img_rect.center
+                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
+                        img_rect = card_img.get_rect(center=(card_x, card_y))
+                    elif index == i:
+                        sound_manager.play_card_hover(i)
+                        new_width = int(img_rect.width * 1.2)
+                        new_height = int(img_rect.height * 1.2)
+                        card_x, card_y = img_rect.center
+                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
+                        img_rect = card_img.get_rect(center=(card_x, card_y))
+                    screen.blit(card_img, img_rect)
+
+            if i < len(enemy_last_cards):
+                card_key = card_name_to_filename(enemy_last_cards[i])
+                card_img = enemy.deck.images.get(card_key)
+                if card_img:
+                    img_rect = card_img.get_rect(center=enemy_card_slot_rect.center)
+                    screen.blit(card_img, img_rect)
+
+        # Draw tooltips
+        for i in range(5):
+            if self.button_hover(start_x + i * (box_width + spacing), y_pos, box_width, box_height):
+                self.draw_tooltip(self.tutorial.tool_tip)
+            if self.button_hover(start_x + i * (box_width + spacing), 20, box_width, box_height):
+                self.draw_tooltip(self.tutorial.tool_tip)
 
         # --- Buttons ---
         mouse_pos = pygame.mouse.get_pos()

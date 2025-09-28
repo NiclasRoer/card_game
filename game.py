@@ -56,7 +56,7 @@ while main_menu:
     if show_deck_builder:
         ui.draw_deck_builder(player)
     elif show_tutorial:
-        ui.draw_tutorial(410, 10)
+        ui.draw_tutorial_text(410, 10)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -92,13 +92,34 @@ while main_menu:
     pygame.display.flip()
     ui.clock.tick(60)
 
-### MAIN GAME
-# player.deck.load_deck('test_deck.txt')
-
 enemy_turn_step = None
 
 played_card = None
 player_turn = True
+
+selected = None
+index = None
+
+# player.deck.load_deck('')
+# enemy.deck.load_deck('')
+while True:
+    screen.fill((34, 34, 34))  # green table background
+    ui.draw_tutorial_duel(player, enemy, animator, sound_manager, select_card, event, selected, index)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # if ui.button_hover(150, 500, 200, 50):  # Start Game
+            print('Tutorial ended', ui.tutorial_step)
+            ui.tutorial_step += 1
+    if ui.tutorial_step == 5:
+        print(ui.tutorial_step)
+        break
+    pygame.display.flip()
+
+### MAIN GAME
+# player.deck.load_deck('test_deck.txt')
 
 # -------------------------------
 # Main loop
@@ -114,81 +135,14 @@ while main_game:
     while run_duel:
         screen.fill((34, 139, 34))  # green table background
 
-        ui.draw_game(player, enemy)
+        ui.draw_game(player, enemy, animator, sound_manager, select_card, event, selected, index)
         if show_tutorial:
-            ui.draw_tutorial(50, HEIGHT/2 + 50, font='small')
+            ui.draw_tutorial_text(50, HEIGHT / 2 + 50, font='small')
 
         center = pygame.Vector2(WIDTH / 2 - 350, 95 if not player_turn else 630)
         end = pygame.Vector2(WIDTH / 2 - 300, 95 if not player_turn else 630)
         # draw_arrow(screen, center, end, pygame.Color("dodgerblue"), 10, 20, 12)
         draw_arrow(screen, center, end, pygame.Color(0, 0, 0), 10, 20, 12)
-
-        # --- Draw 5 card boxes at the bottom
-        box_width = 100
-        box_height = 145
-        spacing = 10
-        start_x = (WIDTH - (5 * box_width + 4 * spacing)) // 2
-        y_pos = HEIGHT - box_height - 20
-
-        last_cards = player.drawn_cards[-5:]
-        enemy_last_cards = enemy.drawn_cards[-5:]
-
-        # Draw Card Slots and cards
-        for i in range(5):
-            card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
-            enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)
-
-            # Draw empty box
-            pygame.draw.rect(screen, (200, 200, 200), card_slot_rect, border_radius=5)
-            pygame.draw.rect(screen, (200, 200, 200), enemy_card_slot_rect, border_radius=5)
-
-            # Decide border color
-            if i < len(last_cards) and last_cards[i] == player.selected_card and i == player.selected_card_position:
-                border_color = (255, 215, 0)  # highlight
-                animator.card_position = (start_x + i * (box_width + spacing), y_pos)
-            else:
-                border_color = (0, 0, 0)
-            pygame.draw.rect(screen, border_color, card_slot_rect, 3, border_radius=5)
-
-            if i < len(enemy_last_cards) and enemy_last_cards[i] == enemy.selected_card:
-                border_color = (255, 215, 0)  # highlight
-                animator.card_position = (start_x + i * (box_width + spacing), 20)
-            else:
-                border_color = (0, 0, 0)
-            pygame.draw.rect(screen, border_color, enemy_card_slot_rect, 3, border_radius=5)
-
-            # Draw card image if it exists
-            if i < len(last_cards):
-                card_key = card_name_to_filename(last_cards[i])
-                card_img = player.deck.images.get(card_key)
-                if card_img:
-                    img_rect = card_img.get_rect(center=card_slot_rect.center)
-                    try:
-                        selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
-                    except:
-                        selected, index = selected, index
-                    if i < len(last_cards) and last_cards[
-                        i] == player.selected_card and i == player.selected_card_position:
-                        new_width = int(img_rect.width * 1.2)
-                        new_height = int(img_rect.height * 1.2)
-                        card_x, card_y = img_rect.center
-                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
-                        img_rect = card_img.get_rect(center=(card_x, card_y))
-                    elif index == i:
-                        sound_manager.play_card_hover(i)
-                        new_width = int(img_rect.width * 1.2)
-                        new_height = int(img_rect.height * 1.2)
-                        card_x, card_y = img_rect.center
-                        card_img = pygame.transform.scale(card_img, (new_width, new_height))
-                        img_rect = card_img.get_rect(center=(card_x, card_y))
-                    screen.blit(card_img, img_rect)
-
-            if i < len(enemy_last_cards):
-                card_key = card_name_to_filename(enemy_last_cards[i])
-                card_img = enemy.deck.images.get(card_key)
-                if card_img:
-                    img_rect = card_img.get_rect(center=enemy_card_slot_rect.center)
-                    screen.blit(card_img, img_rect)
 
             # if played_card and not animator.animation_running and enemy_turn_step != 3 and enemy_turn_step != 4:
             #     card_key = card_name_to_filename(played_card)
@@ -198,13 +152,6 @@ while main_game:
             #         center_img = pygame.transform.scale(card_img, (200, 290))  # adjust size
             #         center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             #         screen.blit(center_img, center_rect)
-
-        # Draw tooltips
-        for i in range(5):
-            if ui.button_hover(start_x + i * (box_width + spacing), y_pos, box_width, box_height):
-                ui.draw_tooltip(ui.tutorial.tool_tip)
-            if ui.button_hover(start_x + i * (box_width + spacing), 20, box_width, box_height):
-                ui.draw_tooltip(ui.tutorial.tool_tip)
 
         if animator.animation_running:
             elapsed = pygame.time.get_ticks() - player.enemy_card_start_time
@@ -287,8 +234,9 @@ while main_game:
 
                     else:
                         # Check if a card box was clicked
-
-                        selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
+                        card_slot_area_x = (WIDTH - (5 * 100 + 4 * 10)) // 2
+                        card_slot_area_y = HEIGHT - 145 - 20
+                        selected, index = select_card(event.pos, player.drawn_cards[-5:], card_slot_area_x, card_slot_area_y)
                         if selected and selected in player.drawn_cards:
                             sound_manager.play_card_select()
                             if selected == player.selected_card:
