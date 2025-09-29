@@ -111,7 +111,6 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # if ui.button_hover(150, 500, 200, 50):  # Start Game
-            print('Tutorial ended', ui.tutorial_step)
             ui.tutorial_step += 1
     if ui.tutorial_step == 5:
         print(ui.tutorial_step)

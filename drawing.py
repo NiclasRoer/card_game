@@ -289,16 +289,34 @@ class UI:
             self.screen.blit(rendered_text, (x, y))
             y += rendered_text.get_height() + 5
 
+    def draw_tutorial_duel_explanaition(self):
+        y = 0
+        for line in self.tutorial.tutorial_text_duel[self.tutorial_step]:
+            rendered_text = self.font.render(line, True, self.WHITE)
+            self.screen.blit(rendered_text, (self.WIDTH // 4, self.HEIGHT // 2 + y))
+            y += rendered_text.get_height() + 5
+
     def draw_tutorial_duel(self, tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index):
         self.draw_game(tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index)
 
-        highlight_rect = pygame.Rect(200*self.tutorial_step, 150, 50, 50)
+        highlight_rect = pygame.Rect(350, 550, 550, 150)
+
+        # --- Create Highlights and Tutorial text ---
+        if self.tutorial_step == 1:
+            highlight_rect = pygame.Rect(self.WIDTH // 2 - 300, self.HEIGHT // 2 + 170, 580, 175)
+        elif self.tutorial_step == 2:
+            highlight_rect = pygame.Rect(45, self.HEIGHT // 2 - 25, 170, 65)
+        elif self.tutorial_step == 3:
+            highlight_rect = pygame.Rect(self.WIDTH // 2 + 280, self.HEIGHT // 2 + 210, 350, 140)
+        elif self.tutorial_step == 4:
+            highlight_rect = pygame.Rect(5, self.HEIGHT - 127, 155, 124)
         highlight_color = (255, 255, 255, 200)  # Semi-transparent green (R, G, B, Alpha)
         highlight_surface = pygame.Surface((highlight_rect.width, highlight_rect.height))
         highlight_surface.set_alpha(80)  # Set transparency
         highlight_surface.fill(highlight_color)
         self.screen.blit(highlight_surface, (highlight_rect.x, highlight_rect.y))
 
+        self.draw_tutorial_duel_explanaition()
 
 
     def draw_tooltip(self, tool_tip):
@@ -440,7 +458,7 @@ class UI:
                     try:
                         selected, index = select_card(event.pos, player.drawn_cards[-5:], start_x, y_pos)
                     except:
-                        selected, index = selected, index
+                        selected, index = None, None
                     if i < len(last_cards) and last_cards[
                         i] == player.selected_card and i == player.selected_card_position:
                         new_width = int(img_rect.width * 1.2)

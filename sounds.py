@@ -9,7 +9,9 @@ class Sound_Manager:
         self.card_hover_sound = pygame.mixer.Sound("C:/Users/Niclas/Downloads/Branch Wood Stress Cracking-SoundBible.com-2062541157.mp3")
         self.card_hover_sound.set_volume(0.5)
         self.card_hover_sound_active = [True, True, True, True, True]
-        self.drawing_sound = pygame.mixer.Sound('C:/Users/Niclas/Downloads/Drawer Opening-SoundBible.com-1100475088.mp3')
+        # self.drawing_sound = pygame.mixer.Sound('C:/Users/Niclas/Downloads/Drawer Opening-SoundBible.com-1100475088.mp3')
+        self.drawing_sound = pygame.mixer.Sound(
+            'C:/Users/Niclas/Downloads/steampunk-mechanical-gadget-188052.mp3')
 
     def play_card_select(self):
         if self.card_select_sound_timer + 200 <= self.pygame.time.get_ticks():
