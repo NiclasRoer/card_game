@@ -299,7 +299,7 @@ class UI:
     def draw_tutorial_duel(self, tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index):
         self.draw_game(tutorial_player, tutorial_enemy, animator, sound_manager, select_card, event, selected, index)
 
-        highlight_rect = pygame.Rect(350, 550, 550, 150)
+        highlight_rect = pygame.Rect(350, 550, 0, 0)
 
         # --- Create Highlights and Tutorial text ---
         if self.tutorial_step == 1:
