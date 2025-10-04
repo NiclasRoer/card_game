@@ -13,6 +13,8 @@ class Character:
         self.enemy_card_start_time = 0
         self.ENEMY_DISPLAY_TIME = 1000
 
+        self.field_suit = ''
+
     def process_conditions(self):
         self.conditions = {'Overclock': 0, 'Corrosion': 0, 'Upgrade': 0}
 
@@ -58,6 +60,11 @@ class Character:
         value = rank_map.get(rank_str, None)
 
         self.mana -= value
+
+        if value == 14:
+            print('Ace')
+            self.field_suit = suit
+            print(self.field_suit)
 
         if self.deck.reverse_flags[card_str]:
             if suit == 'Clubs':

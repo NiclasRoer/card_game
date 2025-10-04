@@ -101,6 +101,12 @@ class UI:
         for i, icon in enumerate(self.ui_exp):
             self.ui_exp[i] = pygame.transform.scale(icon, (20, 20))
 
+        self.field_cards = {}
+        for suit in ['Clubs', 'Diamonds', 'Hearts', 'Spades']:
+            path = get_asset_path(f'card_images/PNG/Cards (medium)/card_{suit.lower()}_suit.png')
+            icon = pygame.image.load(path)
+            self.field_cards[suit] = pygame.transform.scale(icon, (50, 73))
+
         self.condition_icons = {}
         path = get_asset_path('board_game_icons/PNG/Default (64px)/sword.png')
         icon = pygame.image.load(path)
@@ -423,6 +429,12 @@ class UI:
         spacing = 10
         start_x = (WIDTH - (5 * box_width + 4 * spacing)) // 2
         y_pos = HEIGHT - box_height - 20
+
+        # --- Field Suit ---
+        if player.field_suit != '':
+            screen.blit(self.field_cards[player.field_suit], (start_x + 4 * (box_width + spacing), y_pos-80))
+        if enemy.field_suit != '':
+            screen.blit(self.field_cards[enemy.field_suit], (start_x + 4 * (box_width + spacing), box_height + 20))
 
         last_cards = player.drawn_cards[-5:]
         enemy_last_cards = enemy.drawn_cards[-5:]

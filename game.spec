@@ -62,6 +62,11 @@ a = Analysis(
         ('card_images/PNG/Cards (medium)/card_spades_K.png', 'card_images/PNG/Cards (medium)'),
         ('card_images/PNG/Cards (medium)/card_spades_A.png', 'card_images/PNG/Cards (medium)'),
 
+        ('card_images/PNG/Cards (medium)/card_clubs_suit.png', 'card_images/PNG/Cards (medium)'),
+        ('card_images/PNG/Cards (medium)/card_diamonds_suit.png', 'card_images/PNG/Cards (medium)'),
+        ('card_images/PNG/Cards (medium)/card_hearts_suit.png', 'card_images/PNG/Cards (medium)'),
+        ('card_images/PNG/Cards (medium)/card_spades_suit.png', 'card_images/PNG/Cards (medium)'),
+
         ('board_game_icons/PNG/Default (64px)/skull.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/shield.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/hexagon_outline.png', 'board_game_icons/PNG/Default (64px)'),
@@ -71,6 +76,11 @@ a = Analysis(
         ('board_game_icons/PNG/Default (64px)/sword.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/cards_skull.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/fire.png', 'board_game_icons/PNG/Default (64px)'),
+
+        ('sounds/steampunk-mechanical-gadget-188052.mp3', 'sounds'),
+        ('sounds/Drawer Opening-SoundBible.com-1100475088.mp3', 'sounds'),
+        ('sounds/Branch Wood Stress Cracking-SoundBible.com-2062541157.mp3', 'sounds'),
+        ('sounds/Dry Fire Gun-SoundBible.com-2053652037.mp3', 'sounds'),
 
     ],
     hiddenimports=[],
