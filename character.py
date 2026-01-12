@@ -29,6 +29,7 @@ class Character:
         self.life = 100
         self.poison = 0
         self.shield = 0
+        self.fuel = 0
         self.damage_value = 0
         self.mana = 1
         if begin_duel:
@@ -82,28 +83,57 @@ class Character:
             if suit == 'Clubs':
                 self.process_clubs(value, enemy)
             elif suit == 'Spades':
-                self.process_spades(value)
+                self.process_spades(value, enemy)
             elif suit == 'Diamonds':
                 self.process_diamonds(value, enemy)
             elif suit == 'Hearts':
                 self.process_hearts(value)
 
     def process_diamonds(self, value, enemy):
-        if value % 2:
-            self.shield += 2 * value
+        modifier = self.field_suit_number if self.field_suit == 'Diamonds' else 0
+
+        if value < 10:
+            if value % 2:
+                enemy.shield = max(0, enemy.shield - value)
+                self.damage_value = self.shield
+            else:
+                self.shield += 2 * (value + modifier * modifier)
         else:
-            enemy.shield = max(0, enemy.shield - value)
-            self.damage_value = self.shield
+            stolen = enemy.shield - max(0, enemy.shield - 10 - modifier * modifier)
+            if stolen > 0:
+                self.shield += stolen
+                enemy.shield -= stolen
+
 
     def process_clubs(self, value, enemy):
-        enemy.poison += value
+        modifier = self.field_suit_number if self.field_suit == 'Clubs' else 0
 
-    def process_spades(self, value):
-        if value % 2:
-            self.damage_value = value
+        if value < 10:
+            if value % 2:
+                enemy.poison += value + modifier * modifier
+            else:
+                self.poison -= value + modifier * modifier
+
         else:
-            new_cards = self.deck.draw(int(value / 2))
-            self.drawn_cards.extend(new_cards)
+            if enemy.field_suit != '':
+                enemy.field_suit_number -= 1
+                if enemy.field_suit_number < 1:
+                    enemy.field_suit = ''
+
+    def process_spades(self, value, enemy):
+
+        modifier = self.field_suit_number if self.field_suit == 'Spades' else 0
+
+        if value < 10:
+            if value % 2:
+                new_cards = self.deck.draw(int(value / 2) - 1)
+                self.drawn_cards.extend(new_cards)
+            else:
+                self.fuel = value / 2
+        else:
+            if len(enemy.drawn_cards) >= 1:
+                enemy.drawn_cards.pop(random.randrange(len(enemy.drawn_cards) + modifier))
+
 
     def process_hearts(self, value):
         self.life += value
