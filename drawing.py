@@ -432,9 +432,11 @@ class UI:
 
         # --- Field Suit ---
         if player.field_suit != '':
-            screen.blit(self.field_cards[player.field_suit], (start_x + 4 * (box_width + spacing), y_pos-80))
+            for ace in range(player.field_suit_number):
+                screen.blit(self.field_cards[player.field_suit], (start_x + 4 * (box_width + spacing) + ace*box_width/5, y_pos-80))
         if enemy.field_suit != '':
-            screen.blit(self.field_cards[enemy.field_suit], (start_x + 4 * (box_width + spacing), box_height + 20))
+            for ace in range(enemy.field_suit_number):
+                screen.blit(self.field_cards[enemy.field_suit], (start_x + 4 * (box_width + spacing) + ace*box_width/5, box_height + 20))
 
         last_cards = player.drawn_cards[-5:]
         enemy_last_cards = enemy.drawn_cards[-5:]

@@ -14,6 +14,7 @@ class Character:
         self.ENEMY_DISPLAY_TIME = 1000
 
         self.field_suit = ''
+        self.field_suit_number = 0
 
     def process_conditions(self):
         self.conditions = {'Overclock': 0, 'Corrosion': 0, 'Upgrade': 0}
@@ -62,9 +63,11 @@ class Character:
         self.mana -= value
 
         if value == 14:
-            print('Ace')
-            self.field_suit = suit
-            print(self.field_suit)
+            if self.field_suit == suit:
+                self.field_suit_number += 1
+            else:
+                self.field_suit_number = 1
+                self.field_suit = suit
 
         if self.deck.reverse_flags[card_str]:
             if suit == 'Clubs':
