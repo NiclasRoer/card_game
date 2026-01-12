@@ -30,11 +30,12 @@ class Character:
         self.poison = 0
         self.shield = 0
         self.fuel = 0
+        self.dead_draw = 0
         self.damage_value = 0
         self.mana = 1
         if begin_duel:
             self.deck.shuffle()
-            self.drawn_cards.extend(self.deck.draw(3))
+            self.drawn_cards.extend(self.processes_drawing(3))
 
     def end_turn(self, enemy):
         enemy.life -= enemy.poison
@@ -126,10 +127,10 @@ class Character:
 
         if value < 10:
             if value % 2:
-                new_cards = self.deck.draw(int(value / 2) - 1)
+                new_cards = self.processes_drawing(int(value / 2) - 1)
                 self.drawn_cards.extend(new_cards)
             else:
-                self.fuel = value / 2
+                self.fuel += value / 2
         else:
             if len(enemy.drawn_cards) >= 1:
                 enemy.drawn_cards.pop(random.randrange(len(enemy.drawn_cards) + modifier))
@@ -156,3 +157,10 @@ class Character:
 
     def process_hearts_reverse(self, value):
         self.conditions['Overclock'] = value + self.conditions['Overclock']
+
+    def processes_drawing(self, number_of_cards):
+        new_cards = self.deck.draw(number_of_cards)
+        if not new_cards:
+            self.dead_draw += 1
+            self.life -= self.dead_draw
+        return new_cards

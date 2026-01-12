@@ -165,7 +165,7 @@ while main_game:
                 # End Turn
                 if player.mana < 0:
                     player_turn = not player_turn
-                    enemy_card = enemy.deck.draw(1)
+                    enemy_card = enemy.processes_drawing(1)
                     enemy.drawn_cards.extend(enemy_card)
                     sound_manager.play_draw()
                     if len(enemy.drawn_cards) >= 6:
@@ -192,7 +192,7 @@ while main_game:
                     if ui.button_rect.collidepoint(event.pos):
                         # Draw a new card
                         player.mana -= 1
-                        new_cards = player.deck.draw(1)
+                        new_cards = player.processes_drawing(1)
                         player.drawn_cards.extend(new_cards)
                         sound_manager.play_draw()
                         if len(player.drawn_cards) >= 6:
@@ -312,13 +312,13 @@ while main_game:
                 if enemy.mana < 0:
                     enemy_turn_step = 6
                 elif len(enemy.drawn_cards) == 0:
-                        enemy.deck.draw(1)
+                        enemy.processes_drawing(1)
                         enemy.mana -= 1
                 else:
                     enemy_turn_step = 1
 
             if enemy_turn_step == 6:
-                new_cards = player.deck.draw(1)
+                new_cards = player.processes_drawing(1)
                 player.drawn_cards.extend(new_cards)
                 if len(player.drawn_cards) >= 6:
                     player.drawn_cards = player.drawn_cards[1:]
