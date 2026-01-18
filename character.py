@@ -1,6 +1,8 @@
 from deck import Deck
 import random
 
+from computing_helperfunctions import compute_card_value
+
 
 class Character:
     def __init__(self):
@@ -41,7 +43,7 @@ class Character:
         enemy.life -= enemy.poison
 
         enemy.life = enemy.life - max(0, self.damage_value - enemy.shield)
-        enemy.shield = max(0, enemy.shield - 2)
+        # enemy.shield = max(0, enemy.shield - 2)
         self.poison = max(0, self.poison - 2)
 
         if self.mana < 0:
@@ -52,15 +54,7 @@ class Character:
         enemy.turn_played_cards = []
 
     def calc_damage(self, card_str, enemy):
-        rank_str, suit = card_str.split(" of ")
-
-        rank_map = {
-            "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7,
-            "8": 8, "9": 9, "10": 10,
-            "Jack": 11, "Queen": 12, "King": 13, "Ace": 14,
-            "": 0
-        }
-        value = rank_map.get(rank_str, None)
+        value, suit = compute_card_value(card_str)
 
         self.mana -= value
 
@@ -122,7 +116,6 @@ class Character:
                     enemy.field_suit = ''
 
     def process_spades(self, value, enemy):
-
         modifier = self.field_suit_number if self.field_suit == 'Spades' else 0
 
         if value < 10:
@@ -130,14 +123,24 @@ class Character:
                 new_cards = self.processes_drawing(int(value / 2) - 1)
                 self.drawn_cards.extend(new_cards)
             else:
-                self.fuel += value / 2
+                enemy.fuel -= value / 2
         else:
             if len(enemy.drawn_cards) >= 1:
                 enemy.drawn_cards.pop(random.randrange(len(enemy.drawn_cards) + modifier))
 
 
     def process_hearts(self, value):
-        self.life += value
+        modifier = self.field_suit_number if self.field_suit == 'Hearts' else 0
+
+        if value < 10:
+            if value % 2:
+                self.life += value
+            else:
+                self.fuel += value / 2
+        else:
+            # Change to recycling cards
+            self.life = int(self.life * 0.75) + modifier*modifier
+            self.damage_value = int(self.life * 0.33) + modifier*modifier
 
 
     def process_diamonds_reverse(self, value, enemy):

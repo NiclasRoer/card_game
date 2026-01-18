@@ -1,4 +1,4 @@
-from drawing import get_asset_path
+from computing_helperfunctions import get_asset_path
 
 class Sound_Manager:
     def __init__(self, pygame):

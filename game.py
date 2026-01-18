@@ -2,7 +2,8 @@ import pygame
 import random
 import sys
 
-from drawing import UI, draw_arrow, card_name_to_filename
+from computing_helperfunctions import card_name_to_filename
+from drawing import UI, draw_arrow
 from character import Character
 from animations import Animator
 from sounds import Sound_Manager
@@ -136,7 +137,8 @@ while main_game:
 
         ui.draw_game(player, enemy, animator, sound_manager, select_card, event, selected, index)
         if show_tutorial:
-            ui.draw_tutorial_text(50, HEIGHT / 2 + 50, font='small')
+            # ui.draw_tutorial_text(50, HEIGHT / 2 + 50, font='small')
+            ui.draw_tutorial_text(50, HEIGHT / 2 - 120, font='small')
 
         center = pygame.Vector2(WIDTH / 2 - 350, 95 if not player_turn else 630)
         end = pygame.Vector2(WIDTH / 2 - 300, 95 if not player_turn else 630)

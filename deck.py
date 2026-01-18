@@ -1,7 +1,7 @@
 import pygame
 import random
 import os
-from drawing import get_asset_path, filename_to_card_name, card_name_to_filename
+from computing_helperfunctions import get_asset_path, filename_to_card_name, card_name_to_filename
 
 class Deck:
     def __init__(self):
@@ -161,7 +161,6 @@ class Deck:
                 # 'dice_decorated_empty.png', 'dice_decorated_question.png', 'dice_empty.png',
                 # 'dice_question.png', '_cards.csv'
                 ]
-
 
 
 # Example usage:

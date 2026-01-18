@@ -1,3 +1,4 @@
+from computing_helperfunctions import compute_card_value
 
 class Tutorial:
     def __init__(self):
@@ -10,12 +11,24 @@ class Tutorial:
         self.create_tool_tip()
 
     def create_tutorial_text(self):
-        self.tutorial_text = ["Hearts ♥: Heal according to the cards value.",
-                              "Diamonds ♦: Odd Deal Damage according to your shield value.",
-                              "            Even add shield according to the cards value.",
-                              "Clubs ♣: Add poison to your enemy according to the cards value.",
-                              "Spades ♠:  Odd: Draw cards according to half the cards value - 1.",
-                              "           Even: Deal damage according to the cards value."]
+        self.tutorial_text = ["Hearts ♥:   Odd     - Heal according to the cards value.",
+                              "            Even    - Add fuel counters, to increase physical damage.",
+                              "            Picture - Pay 25% life to deal 33% total physical damage.",
+                              "Diamonds ♦: Odd     - Deal physical damage according to 2 * your shield value.",
+                              "            Even    - Add shield according to the cards value.",
+                              "            Picture - Steal 10 shield from your enemy.",
+                              "",
+                              "",
+                              "",
+                              "",
+                              "Clubs ♣:    Odd     - Add poison stacks to your enemy according to cards value.",
+                              "            Even    - Reduce your poison stacks according to cards value.",
+                              "            Picture - Destroy one of your enemies ace stacks.",
+                              "Spades ♠:   Odd     - Draw cards according to half the cards value - 1.",
+                              "            Even    - Reduce enemies fuel by cards value.",
+                              "            Picture - Enemy discards a random card.",
+                              "",
+                              "Aces increase the effectiveness of a suit and can be stacked. Only one suit can be stacked at a time."]
 
     def creat_tutorial_text_duel(self):
         self.tutorial_text_duel = []
@@ -33,5 +46,23 @@ class Tutorial:
                                         'to you, armor prevents physical damage...'])
 
     def create_tool_tip(self):
-        self.tool_tip = "Tool Tip"
+        self.tool_tip = {
+            'Hearts': {'even': 'Powerup your attacks', 'odd': 'Heal yourself', 'img': 'Pay life to deal damage', 'ace': 'Strengthen your diamond cards'},
+            'Diamonds': {'even': 'Gives shield value', 'odd': 'Does physical damage', 'img': 'Steal shield value', 'ace': 'Strengthen your diamond cards'},
+            'Clubs': {'even': 'Reduce your poison stacks', 'odd': 'Poison the enemy', 'img': 'Destroy enemies ace stack', 'ace': 'Strengthen your club cards'},
+            'Spades': {'even': 'Debuff enemies attacks', 'odd': 'Draw cards', 'img': 'Opponent discards a card', 'ace': 'Strengthen your spade cards'},
+        }
 
+
+    def provide_tool_tip(self, card_name):
+        value, suit = compute_card_value(card_name)
+
+        if value == 14:
+            category = 'ace'
+        elif value > 10:
+            category = 'img'
+        elif value % 2 == 0:
+            category = 'even'
+        else:
+            category = 'odd'
+        return self.tool_tip[suit][category]
