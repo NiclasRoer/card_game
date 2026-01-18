@@ -90,7 +90,7 @@ class Character:
         if value < 10:
             if value % 2:
                 enemy.shield = max(0, enemy.shield - value)
-                self.damage_value = self.shield
+                self.damage_value = self.shield + self.fuel
             else:
                 self.shield += 2 * (value + modifier * modifier)
         else:
@@ -123,7 +123,7 @@ class Character:
                 new_cards = self.processes_drawing(int(value / 2) - 1)
                 self.drawn_cards.extend(new_cards)
             else:
-                enemy.fuel -= value / 2
+                enemy.fuel -= int(value / 2)
         else:
             if len(enemy.drawn_cards) >= 1:
                 enemy.drawn_cards.pop(random.randrange(len(enemy.drawn_cards) + modifier))
@@ -136,11 +136,11 @@ class Character:
             if value % 2:
                 self.life += value
             else:
-                self.fuel += value / 2
+                self.fuel += int(value / 2)
         else:
             # Change to recycling cards
-            self.life = int(self.life * 0.75) + modifier*modifier
-            self.damage_value = int(self.life * 0.33) + modifier*modifier
+            self.life = int(self.life * 0.75 + modifier*modifier)
+            self.damage_value = int(self.life * 0.33) + modifier*modifier + self.fuel
 
 
     def process_diamonds_reverse(self, value, enemy):

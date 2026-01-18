@@ -37,8 +37,12 @@ class UI:
         self.ui_poison = pygame.image.load(path)
         path = get_asset_path('board_game_icons/PNG/Default (64px)/shield.png')
         self.ui_shield = pygame.image.load(path)
+        path = get_asset_path('board_game_icons/PNG/Default (64px)/fire.png')
+        self.ui_fuel = pygame.image.load(path)
         self.ui_poison = pygame.transform.scale(self.ui_poison, (20, 20))
         self.ui_shield = pygame.transform.scale(self.ui_shield, (20, 20))
+        self.ui_fuel = pygame.transform.scale(self.ui_fuel, (20, 20))
+
         path = get_asset_path('board_game_icons/PNG/Default (64px)/hexagon_outline.png')
         self.ui_mana = pygame.image.load(path)
         self.ui_mana = pygame.transform.scale(self.ui_mana, (20, 20))
@@ -266,7 +270,7 @@ class UI:
         elif self.tutorial_step == 3:
             highlight_rect = pygame.Rect(self.WIDTH // 2 + 280, self.HEIGHT // 2 + 210, 350, 140)
         elif self.tutorial_step == 4:
-            highlight_rect = pygame.Rect(5, self.HEIGHT - 127, 155, 124)
+            highlight_rect = pygame.Rect(5, self.HEIGHT - 127, 205, 124)
         highlight_color = (255, 255, 255, 200)  # Semi-transparent green (R, G, B, Alpha)
         highlight_surface = pygame.Surface((highlight_rect.width, highlight_rect.height))
         highlight_surface.set_alpha(80)  # Set transparency
@@ -320,8 +324,10 @@ class UI:
 
         screen.blit(self.ui_poison, (70, HEIGHT - 5 - 20))
         screen.blit(self.ui_shield, (120, HEIGHT - 5 - 20))
+        screen.blit(self.ui_fuel, (170, HEIGHT - 5 - 20))
         screen.blit(self.ui_poison, (70, 2))
         screen.blit(self.ui_shield, (120, 2))
+        screen.blit(self.ui_fuel, (170, 2))
 
         pygame.draw.rect(screen, (255, 255, 255), lifebar_player, border_radius=10)
         pygame.draw.rect(screen, (255, 255, 255), lifebar_enemy, border_radius=10)
@@ -349,11 +355,13 @@ class UI:
         self.draw_value_text(font, str(player.life), lifebar_player.centerx, lifebar_player.bottom + 12, (255, 255, 255))
         self.draw_value_text(font, str(player.poison), lifebar_player.right + 50, lifebar_player.bottom + 12, (0, 0, 0))
         self.draw_value_text(font, str(player.shield), lifebar_player.right + 100, lifebar_player.bottom + 12, (0, 0, 0))
+        self.draw_value_text(font, str(player.fuel), lifebar_player.right + 150, lifebar_player.bottom + 12,(0, 0, 0))
 
         # --- Enemy Text ---
         self.draw_value_text(font, str(enemy.life), lifebar_enemy.centerx, lifebar_enemy.top - 12, (255, 255, 255))
         self.draw_value_text(font, str(enemy.poison), lifebar_enemy.right + 50, lifebar_enemy.top - 12, (0, 0, 0))
         self.draw_value_text(font, str(enemy.shield), lifebar_enemy.right + 100, lifebar_enemy.top - 12, (0, 0, 0))
+        self.draw_value_text(font, str(enemy.fuel), lifebar_enemy.right + 150, lifebar_enemy.top - 12, (0, 0, 0))
 
         # -- Played Cards ---
         if player.turn_played_cards:

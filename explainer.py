@@ -42,12 +42,13 @@ class Tutorial:
                                         'draw a card for 1 mana, check the symbols effects or reverse the card.',
                                         'Reversing the card has currently no effect...'])
         self.tutorial_text_duel.append(['These are your characters status values. Life indicates your health points,',
-                                        'the skull are your poison stacks, the shield your armor. Poison does damage',
-                                        'to you, armor prevents physical damage...'])
+                                        'the skull are your poison stacks, the shield your armor, the flame your fuel.',
+                                        'Poison does damage to you after each turn, armor prevents physical damage and',
+                                        'fuel in- or decreases physical damage...'])
 
     def create_tool_tip(self):
         self.tool_tip = {
-            'Hearts': {'even': 'Powerup your attacks', 'odd': 'Heal yourself', 'img': 'Pay life to deal damage', 'ace': 'Strengthen your diamond cards'},
+            'Hearts': {'even': 'Powerup your attacks', 'odd': 'Heal yourself', 'img': 'Pay life to deal damage', 'ace': 'Strengthen your hearts cards'},
             'Diamonds': {'even': 'Gives shield value', 'odd': 'Does physical damage', 'img': 'Steal shield value', 'ace': 'Strengthen your diamond cards'},
             'Clubs': {'even': 'Reduce your poison stacks', 'odd': 'Poison the enemy', 'img': 'Destroy enemies ace stack', 'ace': 'Strengthen your club cards'},
             'Spades': {'even': 'Debuff enemies attacks', 'odd': 'Draw cards', 'img': 'Opponent discards a card', 'ace': 'Strengthen your spade cards'},
