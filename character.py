@@ -7,6 +7,8 @@ from computing_helperfunctions import compute_card_value
 class Character:
     def __init__(self):
         self.deck = Deck()
+        self.draw_hook = None
+        self.is_enemy = False
         self.reset_character(begin_duel=False)
         self.process_conditions()
 
@@ -122,6 +124,8 @@ class Character:
             if value % 2:
                 new_cards = self.processes_drawing(int(value / 2) - 1)
                 self.drawn_cards.extend(new_cards)
+                if self.draw_hook and new_cards:
+                    self.draw_hook(new_cards, self)
             else:
                 enemy.fuel -= int(value / 2)
         else:

@@ -30,6 +30,36 @@ def select_card(mouse_pos, last_cards, start_x, y_pos, box_width=100, box_height
     return None, None
 
 
+def enqueue_draw_animations_for_new_cards(actor, new_cards):
+    if not new_cards:
+        return
+
+    visible_cards = actor.drawn_cards[-5:]
+    for card_name in new_cards:
+        if card_name not in visible_cards:
+            continue
+        card_key = card_name_to_filename(card_name)
+        card_front = actor.deck.images.get(card_key)
+        card_back = actor.deck.images.get("card_back")
+        target_index = visible_cards.index(card_name)
+        start_center = ui.get_deck_center(enemy=actor.is_enemy)
+        target_center = ui.get_card_slot_center(len(visible_cards), target_index, enemy=actor.is_enemy)
+        if card_back and card_front:
+            animator.queue_draw_animation(card_back, card_front, start_center, target_center, 600, card_name=card_name, target_index=target_index, enemy=actor.is_enemy)
+
+    overflow = max(0, len(actor.drawn_cards) - 5)
+    if overflow > 0:
+        discard_cards = actor.drawn_cards[:overflow]
+        for discard_name in discard_cards:
+            discard_key = card_name_to_filename(discard_name)
+            discard_img = actor.deck.images.get(discard_key)
+            toss_start = ui.get_card_slot_center(len(actor.drawn_cards), 0, enemy=actor.is_enemy)
+            toss_end = (-100 if not actor.is_enemy else WIDTH + 100, toss_start[1])
+            if discard_img:
+                animator.prepare_toss_animation(discard_img, toss_start, toss_end, 600, card_name=discard_name, target_index=0)
+            actor.drawn_cards = actor.drawn_cards[1:]
+
+
 # -------------------------------
 # Pygame setup
 # -------------------------------
@@ -44,7 +74,12 @@ sound_manager = Sound_Manager(pygame)
 ui = UI(screen)
 animator = Animator(screen)
 player = Character()
+player.is_enemy = False
 enemy = Character()
+enemy.is_enemy = True
+
+player.draw_hook = lambda new_cards, actor: enqueue_draw_animations_for_new_cards(actor, new_cards)
+enemy.draw_hook = lambda new_cards, actor: enqueue_draw_animations_for_new_cards(actor, new_cards)
 
 ### MAIN MENU
 main_menu = True
@@ -131,6 +166,8 @@ while main_game:
     player.reset_character()
     enemy.reset_character()
     enemy.mana = 0
+    enqueue_draw_animations_for_new_cards(player, player.drawn_cards)
+    enqueue_draw_animations_for_new_cards(enemy, enemy.drawn_cards)
 
     while run_duel:
         screen.fill((34, 139, 34))  # green table background
@@ -154,6 +191,14 @@ while main_game:
             #         center_rect = center_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             #         screen.blit(center_img, center_rect)
 
+        if animator.draw_animation_running:
+            elapsed = pygame.time.get_ticks() - animator.draw_card_start_time
+            animator.play_draw_animation(elapsed)
+
+        if animator.toss_animation_running:
+            elapsed = pygame.time.get_ticks() - animator.toss_card_start_time
+            animator.play_toss_animation(elapsed)
+
         if animator.animation_running:
             elapsed = pygame.time.get_ticks() - player.enemy_card_start_time
             if elapsed <= player.ENEMY_DISPLAY_TIME:
@@ -169,9 +214,8 @@ while main_game:
                     player_turn = not player_turn
                     enemy_card = enemy.processes_drawing(1)
                     enemy.drawn_cards.extend(enemy_card)
+                    enqueue_draw_animations_for_new_cards(enemy, enemy_card)
                     sound_manager.play_draw()
-                    if len(enemy.drawn_cards) >= 6:
-                        enemy.drawn_cards = enemy.drawn_cards[1:]
                     enemy_turn_step = 1
                     if enemy_turn_step:
                         enemy_card = enemy_card[0] if len(enemy_card) > 0 else ""
@@ -195,10 +239,11 @@ while main_game:
                         # Draw a new card
                         player.mana -= 1
                         new_cards = player.processes_drawing(1)
-                        player.drawn_cards.extend(new_cards)
-                        sound_manager.play_draw()
-                        if len(player.drawn_cards) >= 6:
-                            player.drawn_cards = player.drawn_cards[1:]
+                        if new_cards:
+                            player.drawn_cards.extend(new_cards)
+                            enqueue_draw_animations_for_new_cards(player, new_cards)
+                            sound_manager.play_draw()
+
                         # Deselect if selected card is no longer in hand
                         if player.selected_card not in player.drawn_cards:
                             selected_card = None
@@ -314,16 +359,18 @@ while main_game:
                 if enemy.mana < 0:
                     enemy_turn_step = 6
                 elif len(enemy.drawn_cards) == 0:
-                        enemy.processes_drawing(1)
-                        enemy.mana -= 1
+                    new_cards = enemy.processes_drawing(1)
+                    if new_cards:
+                        enemy.drawn_cards.extend(new_cards)
+                        enqueue_draw_animations_for_new_cards(enemy, new_cards)
+                    enemy.mana -= 1
                 else:
                     enemy_turn_step = 1
 
             if enemy_turn_step == 6:
                 new_cards = player.processes_drawing(1)
                 player.drawn_cards.extend(new_cards)
-                if len(player.drawn_cards) >= 6:
-                    player.drawn_cards = player.drawn_cards[1:]
+                enqueue_draw_animations_for_new_cards(player, new_cards)
                 player_turn = not player_turn
                 enemy.end_turn(player)
 

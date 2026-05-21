@@ -12,27 +12,42 @@ class Deck:
         self.images = {}
         self.load_card_images()
         # self.shuffle()
+        self.deck_layout = self.create_deck_layout(len(self.cards))
+        self.deck_image = self.render_deck_image()
 
     def shuffle(self):
         random.shuffle(self.cards)
+        self.deck_layout = self.create_deck_layout(len(self.cards))
+        self.deck_image = self.render_deck_image()
 
     def draw(self, n=1):
         if n > len(self.cards):
             return []
         drawn = self.cards[:n]
         self.cards = self.cards[n:]
+        self.deck_layout = self.deck_layout[n:]
+        self.update_deck_image()
         return drawn
 
     def add_card(self, card):
         self.cards.append(card)
+        extra_layout = self.create_deck_layout(1)
+        self.deck_layout.extend(extra_layout)
+        self.update_deck_image()
 
     def remove_card(self, card_index):
         self.cards.pop(card_index)
+        if 0 <= card_index < len(self.deck_layout):
+            self.deck_layout.pop(card_index)
+        self.update_deck_image()
 
     def load_card_images(self, path="card_images/PNG/Cards (medium)"):
         self.images = {}
         for filename in self.asset_names:
             if filename.endswith(".png"):
+                if len(self.images) == 0:
+                    self.images["card_back"] = pygame.image.load(get_asset_path(os.path.join(path, "color_back.png"))).convert_alpha()
+                    self.images["card_back"] = pygame.transform.scale(self.images["card_back"], (100, 145)) 
                 key = filename.replace(".png", "")
                 asset_path = get_asset_path(os.path.join(path, filename))
                 img = pygame.image.load(asset_path).convert_alpha()
@@ -65,6 +80,62 @@ class Deck:
         for card in self.cards:
             self.reverse_flags[card] = False
 
+    def create_deck_layout(self, count):
+        card_back_img = self.images.get("card_back")
+        width = card_back_img.get_width() + 25
+        height = card_back_img.get_height() + 25
+        self.deck_width = width
+        self.deck_height = height
+
+        layout = []
+        for _ in range(count):
+            angle = random.uniform(-5, 5) if random.random() < 0.3 else 0
+            if angle:
+                rotated_back = pygame.transform.rotozoom(card_back_img, angle, 1)
+            else:
+                rotated_back = card_back_img
+
+            rotated_rect = rotated_back.get_rect()
+            max_x = max(width - rotated_rect.width, 0)
+            max_y = max(height - rotated_rect.height, 0)
+            rand_x = random.randint(0, max_x)
+            rand_y = random.randint(0, max_y)
+
+            layout.append({
+                "x": rand_x,
+                "y": rand_y,
+                "angle": angle,
+            })
+
+        return layout
+
+    def render_deck_image(self, visible_count=None):
+        if visible_count is None:
+            visible_count = len(self.cards)
+
+        if visible_count > len(self.deck_layout):
+            self.deck_layout.extend(self.create_deck_layout(visible_count - len(self.deck_layout)))
+
+        deck_surf = pygame.Surface((self.deck_width, self.deck_height), pygame.SRCALPHA)
+
+        for layout in reversed(self.deck_layout[:visible_count]):
+            angle = layout["angle"]
+            if angle:
+                rotated_back = pygame.transform.rotozoom(self.images["card_back"], angle, 1)
+            else:
+                rotated_back = self.images["card_back"]
+            deck_surf.blit(rotated_back, (layout["x"], layout["y"]))
+
+        return deck_surf
+
+    def create_deck_image(self):
+        self.deck_layout = self.create_deck_layout(len(self.cards))
+        return self.render_deck_image(len(self.cards))
+
+    def update_deck_image(self):
+        self.deck_image = self.render_deck_image(len(self.cards))
+        return self.deck_image
+
     def load_deck(self, deck_filename, force_root_dir=False):
         filename = deck_filename if force_root_dir else get_asset_path(deck_filename)
 
@@ -78,7 +149,8 @@ class Deck:
                     self.reverse_flags[card_name] = flag == 'True'
                     if self.reverse_flags[card_name]:
                         self.invert_card_colors(card_name_to_filename(card_name))
-            # self.shuffle()
+            self.deck_layout = self.create_deck_layout(len(self.cards))
+            self.update_deck_image()
         else:
             print(f'No such file "{filename}"')
 
@@ -123,7 +195,7 @@ class Deck:
         #     print(f"Image for {new_card} not found.")
 
     def load_asset_names(self):
-        return [# 'card_back.png',
+        return ['card_back.png',
                 'card_clubs_02.png', 'card_clubs_03.png', 'card_clubs_04.png',
                 'card_clubs_05.png', 'card_clubs_06.png', 'card_clubs_07.png', 'card_clubs_08.png',
                 'card_clubs_09.png', 'card_clubs_10.png', 'card_clubs_A.png', 'card_clubs_J.png',
@@ -139,7 +211,7 @@ class Deck:
                 'card_spades_02.png', 'card_spades_03.png',
                 'card_spades_04.png', 'card_spades_05.png', 'card_spades_06.png', 'card_spades_07.png',
                 'card_spades_08.png', 'card_spades_09.png', 'card_spades_10.png', 'card_spades_A.png',
-                'card_spades_J.png', 'card_spades_K.png', 'card_spades_Q.png',
+                'card_spades_J.png', 'card_spades_K.png', 'card_spades_Q.png', 
                 # 'color_back.png', 'color_draw.png', 'color_empty.png', 'color_green_0.png',
                 # 'color_green_1.png', 'color_green_2.png', 'color_green_3.png', 'color_green_4.png',
                 # 'color_green_5.png', 'color_green_6.png', 'color_green_7.png', 'color_green_8.png',

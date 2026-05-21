@@ -98,6 +98,22 @@ class UI:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         return x <= mouse_x <= x + width and y <= mouse_y <= y + height
 
+    def get_deck_center(self, enemy=False):
+        y_pos = 100 if enemy else self.HEIGHT - 100
+        return (self.WIDTH - 300, y_pos)
+
+    def get_card_slot_center(self, hand_size, slot_index=None, enemy=False):
+        box_width = 100
+        box_height = 145
+        spacing = 10
+        start_x = (self.WIDTH - (5 * box_width + 4 * spacing)) // 2
+        y_pos = 20 if enemy else self.HEIGHT - box_height - 20
+        if slot_index is None:
+            slot_index = min(hand_size - 1, 4)
+        slot_index = max(0, min(slot_index, 4))
+        slot_rect = pygame.Rect(start_x + slot_index * (box_width + spacing), y_pos, box_width, box_height)
+        return slot_rect.center
+
     def draw_main(self):
         self.screen.fill(self.WHITE)
         self.display_fps()
@@ -264,11 +280,11 @@ class UI:
 
         # --- Create Highlights and Tutorial text ---
         if self.tutorial_step == 1:
-            highlight_rect = pygame.Rect(self.WIDTH // 2 - 300, self.HEIGHT // 2 + 170, 580, 175)
+            highlight_rect = pygame.Rect(self.WIDTH // 2 - 335, self.HEIGHT // 2 + 170, 730, 175)
         elif self.tutorial_step == 2:
             highlight_rect = pygame.Rect(45, self.HEIGHT // 2 - 25, 170, 65)
         elif self.tutorial_step == 3:
-            highlight_rect = pygame.Rect(self.WIDTH // 2 + 280, self.HEIGHT // 2 + 210, 350, 140)
+            highlight_rect = pygame.Rect(self.WIDTH // 2 + 435, self.HEIGHT // 2 + 70, 300, 280)
         elif self.tutorial_step == 4:
             highlight_rect = pygame.Rect(5, self.HEIGHT - 127, 205, 124)
         highlight_color = (255, 255, 255, 200)  # Semi-transparent green (R, G, B, Alpha)
@@ -399,6 +415,8 @@ class UI:
 
         last_cards = player.drawn_cards[-5:]
         enemy_last_cards = enemy.drawn_cards[-5:]
+        pending_player = [(item['card_name'], item['target_index']) for item in animator.pending_draws if not item['enemy']]
+        pending_enemy = [(item['card_name'], item['target_index']) for item in animator.pending_draws if item['enemy']]
         for i in range(5):
             card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
             enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)
@@ -424,6 +442,10 @@ class UI:
 
             # Draw card image if it exists
             if i < len(last_cards):
+                if (last_cards[i], i) in pending_player:
+                    continue
+                if animator.draw_animation_running and last_cards[i] == animator.draw_card_name and i == animator.draw_target_index:
+                    continue
                 card_key = card_name_to_filename(last_cards[i])
                 card_img = player.deck.images.get(card_key)
                 if card_img:
@@ -449,6 +471,8 @@ class UI:
                     screen.blit(card_img, img_rect)
 
             if i < len(enemy_last_cards):
+                if (enemy_last_cards[i], i) in pending_enemy:
+                    continue
                 card_key = card_name_to_filename(enemy_last_cards[i])
                 card_img = enemy.deck.images.get(card_key)
                 if card_img:
@@ -468,7 +492,7 @@ class UI:
         mouse_pos = pygame.mouse.get_pos()
 
         # Draw Card Button
-        self.button_rect.topright = (WIDTH - 20, HEIGHT - 70)
+        self.button_rect.topright = (WIDTH - 20, HEIGHT - 210)
         color = self.button_hover_color if self.button_rect.collidepoint(mouse_pos) else self.button_color
         self.draw_button("Draw Card", self.button_rect.x, self.button_rect.y, self.button_rect.width, self.button_rect.height, color)
 
@@ -478,14 +502,22 @@ class UI:
         self.draw_button("Reverse", self.reverse_button_rect.x, self.reverse_button_rect.y, self.reverse_button_rect.width, self.reverse_button_rect.height, color)
 
         # Play Button
-        self.play_button_rect.topright = (WIDTH - 200, HEIGHT - 140)
+        self.play_button_rect.topright = (WIDTH - 20, HEIGHT - 280)
         color = self.button_hover_color if self.play_button_rect.collidepoint(mouse_pos) else self.button_color
         self.draw_button("Play", self.play_button_rect.x, self.play_button_rect.y, self.play_button_rect.width, self.play_button_rect.height, color)
 
-        self.tutorial_button_rect.topright = (WIDTH - 200, HEIGHT - 70)
+        self.tutorial_button_rect.topright = (WIDTH - 20, HEIGHT - 70)
         color = self.button_hover_color if self.tutorial_button_rect.collidepoint(mouse_pos) else self.button_color
         self.draw_button("Tutorial", self.tutorial_button_rect.x, self.tutorial_button_rect.y, self.tutorial_button_rect.width, self.tutorial_button_rect.height, color)
 
+
+        # --- Draw Deck ---
+        for char, y_pos in ([player, HEIGHT - 100], [enemy, 100]):
+            deck_image = char.deck.deck_image
+            if isinstance(deck_image, pygame.Surface):
+                deck_surface = deck_image
+            deck_rect = deck_surface.get_rect(center=(WIDTH - 300, y_pos))
+            screen.blit(deck_surface, deck_rect)
 
     def draw_value_text(self, font, text, x, y, color):
         value_text = font.render(text, True, color)
