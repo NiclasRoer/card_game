@@ -1,5 +1,3 @@
-import os
-os.environ['SDL_AUDIODRIVER'] = 'directsound'
 import pygame
 import random
 import sys
