@@ -447,8 +447,8 @@ class UI:
         enemy_last_cards = enemy.drawn_cards[-5:]
         pending_player = [(item['card_name'], item['target_index']) for item in animator.pending_draws if not item['enemy']]
         pending_enemy = [(item['card_name'], item['target_index']) for item in animator.pending_draws if item['enemy']]
-        hide_player_hand = animator.turn_transition_running and not animator.turn_transition_enemy
-        hide_enemy_hand = animator.turn_transition_running and animator.turn_transition_enemy
+        hide_player_hand = False
+        hide_enemy_hand = False
         for i in range(5):
             card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
             enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)

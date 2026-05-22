@@ -66,6 +66,7 @@ a = Analysis(
         ('card_images/PNG/Cards (medium)/card_diamonds_suit.png', 'card_images/PNG/Cards (medium)'),
         ('card_images/PNG/Cards (medium)/card_hearts_suit.png', 'card_images/PNG/Cards (medium)'),
         ('card_images/PNG/Cards (medium)/card_spades_suit.png', 'card_images/PNG/Cards (medium)'),
+        ('card_images/PNG/Cards (medium)/card_back.png', 'card_images/PNG/Cards (medium)'),
 
         ('board_game_icons/PNG/Default (64px)/skull.png', 'board_game_icons/PNG/Default (64px)'),
         ('board_game_icons/PNG/Default (64px)/shield.png', 'board_game_icons/PNG/Default (64px)'),

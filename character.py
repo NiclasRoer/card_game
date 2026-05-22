@@ -52,6 +52,8 @@ class Character:
             enemy.mana = abs(self.mana)
 
         self.damage_value = 0
+
+    def clear_played_cards(self):
         self.discarded_cards.extend(self.turn_played_cards)
         self.turn_played_cards = []
 

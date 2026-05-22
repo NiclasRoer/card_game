@@ -224,30 +224,17 @@ while main_game:
                     def complete_player_transition():
                         global player_turn, enemy_turn_step, enemy_card
                         player.end_turn(enemy)
+                        enemy.clear_played_cards()
                         player_turn = False
                         enemy_turn_step = 1
                         enemy_card = enemy.processes_drawing(1)
                         enemy.drawn_cards.extend(enemy_card)
-                        enqueue_draw_animations_for_new_cards(enemy, enemy_card)
+                        enqueue_draw_animations_for_new_cards(enemy, new_cards=enemy_card)
                         sound_manager.play_draw()
                         enemy_card = enemy_card[0] if len(enemy_card) > 0 else ""
                         enemy.enemy_card_start_time = pygame.time.get_ticks()
 
-                    turn_images = []
-                    start_positions = []
-                    end_positions = []
-                    for idx, card_name in enumerate(player.turn_played_cards):
-                        card_key = card_name_to_filename(card_name)
-                        card_img = player.deck.images.get(card_key)
-                        if card_img:
-                            turn_images.append(card_img)
-                            start_positions.append(ui.get_played_card_center(idx, enemy=False))
-                            end_positions.append((-150, HEIGHT - 120 + idx * 12))
-
-                    if turn_images:
-                        animator.prepare_turn_transition(turn_images, start_positions, end_positions, enemy=False, on_complete=complete_player_transition)
-                    else:
-                        complete_player_transition()
+                    animator.prepare_turn_transition([], [], [], enemy=False, on_complete=complete_player_transition)
 
         elif player_turn:
 
@@ -406,11 +393,18 @@ while main_game:
                     enemy_turn_step = 1
 
             if enemy_turn_step == 6:
-                new_cards = player.processes_drawing(1)
-                player.drawn_cards.extend(new_cards)
-                enqueue_draw_animations_for_new_cards(player, new_cards)
-                player_turn = not player_turn
-                enemy.end_turn(player)
+                def complete_enemy_transition():
+                    global player_turn
+                    player_turn = True
+                    new_cards = player.processes_drawing(1)
+                    player.drawn_cards.extend(new_cards)
+                    enqueue_draw_animations_for_new_cards(player, new_cards)
+                    sound_manager.play_draw()
+                    player.clear_played_cards()
+                    enemy.end_turn(player)
+
+                animator.prepare_turn_transition([], [], [], enemy=True, on_complete=complete_enemy_transition)
+                enemy_turn_step = 7
 
         if enemy.life <= 0:
             mid_screen = True
