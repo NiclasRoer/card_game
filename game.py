@@ -35,13 +35,26 @@ def enqueue_draw_animations_for_new_cards(actor, new_cards):
         return
 
     visible_cards = actor.drawn_cards[-5:]
+    indices_used = set()  # Track which visible indices have been assigned
+    
     for card_name in new_cards:
         if card_name not in visible_cards:
             continue
+        
+        # Find the first index of this card in visible_cards that hasn't been used yet
+        target_index = None
+        for i, c in enumerate(visible_cards):
+            if c == card_name and i not in indices_used:
+                target_index = i
+                indices_used.add(i)
+                break
+        
+        if target_index is None:
+            continue
+        
         card_key = card_name_to_filename(card_name)
         card_front = actor.deck.images.get(card_key)
         card_back = actor.deck.images.get("card_back")
-        target_index = visible_cards.index(card_name)
         start_center = ui.get_deck_center(enemy=actor.is_enemy)
         target_center = ui.get_card_slot_center(len(visible_cards), target_index, enemy=actor.is_enemy)
         if card_back and card_front:
@@ -290,7 +303,9 @@ while main_game:
                             animation_card_img = player.deck.images.get(animation_card_key)
                             if animation_card_img:
                                 center_img = pygame.transform.scale(animation_card_img, (100, 145))
-                                animator.prepare_animation(center_img, player.ENEMY_DISPLAY_TIME, start_pos, end_pos)
+                                card_index = len(player.turn_played_cards)
+                                end_rotation = -5 + (card_index % 3) * 5
+                                animator.prepare_animation(center_img, player.ENEMY_DISPLAY_TIME, start_pos, end_pos, end_rotation=end_rotation)
                             player.enemy_card_start_time = pygame.time.get_ticks()
 
                     elif ui.tutorial_button_rect.collidepoint(event.pos):
@@ -320,14 +335,8 @@ while main_game:
 
             if enemy_turn_step == 1:
                 elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time
-                if elapsed <= enemy.ENEMY_DISPLAY_TIME and enemy_card != "":
-                    card_key = card_name_to_filename(enemy_card)
-                    card_img = enemy.deck.images.get(card_key)
-                    if card_img:
-                        # Draw on the left side
-                        enemy_img = pygame.transform.scale(card_img, (100, 145))
-                        enemy_rect = enemy_img.get_rect(midleft=(20, HEIGHT // 2))
-                        screen.blit(enemy_img, enemy_rect)
+                if elapsed <= enemy.ENEMY_DISPLAY_TIME:
+                    pass
                 else:
                     enemy_turn_step += 1
                     enemy.enemy_card_start_time = pygame.time.get_ticks()
@@ -346,7 +355,9 @@ while main_game:
                         if animation_card_img:
                             start_pos = ui.get_card_slot_center(len(enemy.drawn_cards), enemy.drawn_cards.index(enemy.selected_card), enemy=True)
                             end_pos = ui.get_played_card_center(len(enemy.turn_played_cards), enemy=True)
-                            animator.prepare_animation(animation_card_img, enemy.ENEMY_DISPLAY_TIME, start_pos, end_pos)
+                            card_index = len(enemy.turn_played_cards)
+                            end_rotation = -5 + (card_index % 3) * 5
+                            animator.prepare_animation(animation_card_img, enemy.ENEMY_DISPLAY_TIME, start_pos, end_pos, end_rotation=end_rotation)
 
             elif enemy_turn_step == 3:
                 elapsed = pygame.time.get_ticks() - enemy.enemy_card_start_time

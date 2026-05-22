@@ -416,8 +416,11 @@ class UI:
                 card_img = player.deck.images.get(card_key)
 
                 center_img = pygame.transform.scale(card_img, (100, 145))  # adjust size
-                center_rect = center_img.get_rect(center=(WIDTH // 3 + 40*i, HEIGHT // 2 + 100))
-                screen.blit(center_img, center_rect)
+                rotation = -5 + (i % 3) * 5  # Slight rotation variation
+                rotated_img = pygame.transform.rotate(center_img, rotation)
+                center_pos = (WIDTH // 3 + 40*i + (i % 2) * 8 - ((i + 1) % 2) * 8, HEIGHT // 2 + 100 + (i % 2) * 5)
+                center_rect = rotated_img.get_rect(center=center_pos)
+                screen.blit(rotated_img, center_rect)
 
         if enemy.turn_played_cards:
             for i, card in enumerate(enemy.turn_played_cards):
@@ -425,8 +428,11 @@ class UI:
                 card_img = enemy.deck.images.get(card_key)
 
                 center_img = pygame.transform.scale(card_img, (100, 145))  # adjust size
-                center_rect = center_img.get_rect(center=(WIDTH // 3 + 40*i, HEIGHT // 2 - 100))
-                screen.blit(center_img, center_rect)
+                rotation = -5 + (i % 3) * 5  # Slight rotation variation
+                rotated_img = pygame.transform.rotate(center_img, rotation)
+                center_pos = (WIDTH // 3 + 40*i + (i % 2) * 8 - ((i + 1) % 2) * 8, HEIGHT // 2 - 100 - (i % 2) * 5)
+                center_rect = rotated_img.get_rect(center=center_pos)
+                screen.blit(rotated_img, center_rect)
 
         # --- Card Slots ---
         box_width = 100
@@ -526,13 +532,21 @@ class UI:
 
         # Field card tooltips
         for i, card in enumerate(player.turn_played_cards):
-            played_rect = pygame.Rect(0, 0, 100, 145)
-            played_rect.center = (WIDTH // 3 + 40 * i, HEIGHT // 2 + 100)
+            # Calculate the actual rendered position to match the drawing code
+            card_center_x = WIDTH // 3 + 40*i + (i % 2) * 8 - ((i + 1) % 2) * 8
+            card_center_y = HEIGHT // 2 + 100 + (i % 2) * 5
+            # Use a slightly larger rect to account for rotation
+            played_rect = pygame.Rect(0, 0, 120, 160)
+            played_rect.center = (card_center_x, card_center_y)
             if played_rect.collidepoint(pygame.mouse.get_pos()):
                 self.draw_tooltip(self.tutorial.provide_tool_tip(card))
         for i, card in enumerate(enemy.turn_played_cards):
-            played_rect = pygame.Rect(0, 0, 100, 145)
-            played_rect.center = (WIDTH // 3 + 40 * i, HEIGHT // 2 - 100)
+            # Calculate the actual rendered position to match the drawing code
+            card_center_x = WIDTH // 3 + 40*i + (i % 2) * 8 - ((i + 1) % 2) * 8
+            card_center_y = HEIGHT // 2 - 100 - (i % 2) * 5
+            # Use a slightly larger rect to account for rotation
+            played_rect = pygame.Rect(0, 0, 120, 160)
+            played_rect.center = (card_center_x, card_center_y)
             if played_rect.collidepoint(pygame.mouse.get_pos()):
                 self.draw_tooltip(self.tutorial.provide_tool_tip(card))
 

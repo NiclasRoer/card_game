@@ -12,6 +12,8 @@ class Animator:
         self.rect = None
         self.original_rect = None
         self.card_start_pos = pygame.Vector2(0, 0)
+        self.animation_start_rotation = 0
+        self.animation_end_rotation = 0
         self.WIDTH = width
         self.HEIGHT = height
 
@@ -45,7 +47,7 @@ class Animator:
 
         self.screen = screen
 
-    def prepare_animation(self, image, runtime, start_pos, end_pos):
+    def prepare_animation(self, image, runtime, start_pos, end_pos, end_rotation=0):
         self.image = pygame.transform.scale(image, (100, 145))
         self.card_start_pos = pygame.Vector2(start_pos)
         self.end_position = pygame.Vector2(end_pos)
@@ -53,6 +55,8 @@ class Animator:
         self.original_rect = self.image.get_rect(center=self.card_start_pos)
         self.animation_runtime = runtime
         self.animation_running = True
+        self.animation_start_rotation = 0
+        self.animation_end_rotation = end_rotation
 
     def prepare_draw_animation(self, back_image, front_image, start_pos, end_pos, duration=600, card_name=None, target_index=None):
         self.draw_back_image = pygame.transform.scale(back_image, (100, 145))
@@ -216,11 +220,13 @@ class Animator:
             scale_factor = max_scale - (max_scale - 1) * ((progress - 0.5) / 0.5)
 
         current_pos = self.card_start_pos.lerp(self.end_position, progress)
+        current_rotation = self.animation_start_rotation + (self.animation_end_rotation - self.animation_start_rotation) * progress
         new_width = max(1, int(self.original_rect.width * scale_factor))
         new_height = max(1, int(self.original_rect.height * scale_factor))
         scaled_image = pygame.transform.scale(self.image, (new_width, new_height))
-        scaled_rect = scaled_image.get_rect(center=current_pos)
-        self.screen.blit(scaled_image, scaled_rect)
+        rotated_image = pygame.transform.rotate(scaled_image, current_rotation)
+        scaled_rect = rotated_image.get_rect(center=current_pos)
+        self.screen.blit(rotated_image, scaled_rect)
 
         if progress >= 1.0:
             self.animation_running = False
