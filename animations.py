@@ -11,6 +11,7 @@ class Animator:
         self.image = None
         self.rect = None
         self.original_rect = None
+        self.card_start_pos = pygame.Vector2(0, 0)
         self.WIDTH = width
         self.HEIGHT = height
 
@@ -27,6 +28,12 @@ class Animator:
         self.pending_draws = []
 
         self.toss_animation_running = False
+        self.turn_transition_running = False
+        self.turn_transition_start_time = 0
+        self.turn_transition_duration = 500
+        self.turn_transition_enemy = False
+        self.turn_transition_cards = []
+        self.turn_transition_callback = None
         self.toss_image = None
         self.toss_start_pos = pygame.Vector2(0, 0)
         self.toss_end_pos = pygame.Vector2(0, 0)
@@ -38,12 +45,14 @@ class Animator:
 
         self.screen = screen
 
-    def prepare_animation(self, image, runtime, cards_played_this_turn, player_turn):
+    def prepare_animation(self, image, runtime, start_pos, end_pos):
         self.image = pygame.transform.scale(image, (100, 145))
-        self.rect = self.image.get_rect(topleft=self.card_position)
-        self.original_rect = self.image.get_rect(topleft=self.card_position)
+        self.card_start_pos = pygame.Vector2(start_pos)
+        self.end_position = pygame.Vector2(end_pos)
+        self.rect = self.image.get_rect(center=self.card_start_pos)
+        self.original_rect = self.image.get_rect(center=self.card_start_pos)
         self.animation_runtime = runtime
-        self.end_position = (self.WIDTH // 3 + 50*cards_played_this_turn, self.HEIGHT // 2 - 100*player_turn + 100*int(not player_turn))
+        self.animation_running = True
 
     def prepare_draw_animation(self, back_image, front_image, start_pos, end_pos, duration=600, card_name=None, target_index=None):
         self.draw_back_image = pygame.transform.scale(back_image, (100, 145))
@@ -126,6 +135,42 @@ class Animator:
         if not self.toss_animation_running:
             self._start_next_toss_animation()
 
+    def prepare_turn_transition(self, card_images, start_positions, end_positions, enemy=False, duration=500, on_complete=None):
+        self.turn_transition_cards = []
+        self.turn_transition_enemy = enemy
+        self.turn_transition_duration = duration
+        self.turn_transition_callback = on_complete
+        for img, start_pos, end_pos in zip(card_images, start_positions, end_positions):
+            self.turn_transition_cards.append({
+                'image': pygame.transform.scale(img, (100, 145)),
+                'start': pygame.Vector2(start_pos),
+                'end': pygame.Vector2(end_pos),
+                'enemy': enemy,
+            })
+        self.turn_transition_running = True
+        self.turn_transition_start_time = pygame.time.get_ticks()
+
+    def play_turn_transition(self, timestamp):
+        if not self.turn_transition_running or self.turn_transition_duration <= 0:
+            return
+
+        progress = min(timestamp / self.turn_transition_duration, 1.0)
+        for item in self.turn_transition_cards:
+            current_pos = item['start'].lerp(item['end'], progress)
+            offset = pygame.Vector2((item['end'].x - item['start'].x) * 0.1, -30 * progress)
+            draw_pos = current_pos + offset
+            scaled = pygame.transform.rotozoom(item['image'], -30 * progress, 1 - 0.15 * progress)
+            temp = scaled.copy()
+            temp.set_alpha(max(40, int(255 * (1 - progress))))
+            self.screen.blit(temp, temp.get_rect(center=draw_pos))
+
+        if progress >= 1.0:
+            self.turn_transition_running = False
+            self.turn_transition_cards = []
+            if self.turn_transition_callback:
+                self.turn_transition_callback()
+                self.turn_transition_callback = None
+
     def _start_next_toss_animation(self):
         if self.toss_animation_running or not self.toss_queue:
             return
@@ -160,33 +205,22 @@ class Animator:
             self._start_next_toss_animation()
 
     def play_card_animation(self, timestamp):
+        if not self.animation_running or self.animation_runtime <= 0:
+            return
 
-        dx = self.end_position[0] - self.rect.centerx
-        dy = self.end_position[1] - self.rect.centery
-        distance = math.sqrt(dx ** 2 + dy ** 2)
-        dx_normalized = dx / distance
-        dy_normalized = dy / distance
-
+        progress = min(timestamp / self.animation_runtime, 1.0)
         max_scale = 2.0
+        if progress < 0.5:
+            scale_factor = 1 + (max_scale - 1) * (progress / 0.5)
+        else:
+            scale_factor = max_scale - (max_scale - 1) * ((progress - 0.5) / 0.5)
 
-        scale_factor = 1 + (max_scale - 1) * (timestamp / self.animation_runtime)  # Enlarge
-        if timestamp > self.animation_runtime / 2:
-            scale_factor = max_scale - (max_scale - 1) * ((timestamp - self.animation_runtime / 2) / (self.animation_runtime / 2))
-
-        # Apply the scaling
-        new_width = int(self.original_rect.width * scale_factor)
-        new_height = int(self.original_rect.height * scale_factor)
+        current_pos = self.card_start_pos.lerp(self.end_position, progress)
+        new_width = max(1, int(self.original_rect.width * scale_factor))
+        new_height = max(1, int(self.original_rect.height * scale_factor))
         scaled_image = pygame.transform.scale(self.image, (new_width, new_height))
-        scaled_rect = scaled_image.get_rect(center=self.rect.center)
-
-        # Move the image along the normalized vector (dx_normalized, dy_normalized) with a fixed speed
-        if timestamp > self.animation_runtime / 2:
-            self.rect.x += dx_normalized * 8
-            self.rect.y += dy_normalized * 8
-
-        # Blit the scaled image to the screen
-        # self.screen.fill((0, 0, 0))  # Fill the screen with black or transparent background
+        scaled_rect = scaled_image.get_rect(center=current_pos)
         self.screen.blit(scaled_image, scaled_rect)
-        pygame.display.flip()
 
-        pygame.time.Clock().tick(60)
+        if progress >= 1.0:
+            self.animation_running = False

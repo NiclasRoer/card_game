@@ -52,8 +52,8 @@ class Character:
             enemy.mana = abs(self.mana)
 
         self.damage_value = 0
-        enemy.discarded_cards.extend(self.turn_played_cards)
-        enemy.turn_played_cards = []
+        self.discarded_cards.extend(self.turn_played_cards)
+        self.turn_played_cards = []
 
     def calc_damage(self, card_str, enemy):
         value, suit = compute_card_value(card_str)

@@ -1,4 +1,5 @@
 import pygame
+import math
 from explainer import Tutorial
 from computing_helperfunctions import get_asset_path, card_name_to_filename
 
@@ -113,6 +114,35 @@ class UI:
         slot_index = max(0, min(slot_index, 4))
         slot_rect = pygame.Rect(start_x + slot_index * (box_width + spacing), y_pos, box_width, box_height)
         return slot_rect.center
+
+    def get_played_card_center(self, card_index, enemy=False):
+        x = self.WIDTH // 3 + 40 * card_index
+        y = self.HEIGHT // 2 - 100 if enemy else self.HEIGHT // 2 + 100
+        return (x, y)
+
+    def draw_turn_change_indicator(self, animator):
+        progress = min((pygame.time.get_ticks() - animator.turn_transition_start_time) / max(1, animator.turn_transition_duration), 1.0)
+        center = (self.WIDTH // 2, self.HEIGHT // 2)
+        radius = 50
+        pygame.draw.circle(self.screen, (30, 30, 30), center, radius)
+        pygame.draw.circle(self.screen, (220, 220, 220), center, radius, 4)
+
+        hand_angle = -90 + 90 * progress
+        minute_angle = -90 + 180 * progress
+        hand_length = 30
+        minute_length = 42
+        hand_end = (center[0] + hand_length * math.cos(math.radians(hand_angle)),
+                    center[1] + hand_length * math.sin(math.radians(hand_angle)))
+        minute_end = (center[0] + minute_length * math.cos(math.radians(minute_angle)),
+                      center[1] + minute_length * math.sin(math.radians(minute_angle)))
+        pygame.draw.line(self.screen, (255, 255, 255), center, hand_end, 4)
+        pygame.draw.line(self.screen, (255, 255, 255), center, minute_end, 2)
+
+        label = self.font.render('TURN CHANGE', True, self.WHITE)
+        self.screen.blit(label, (center[0] - label.get_width() // 2, center[1] + radius + 5))
+
+        sub = self.small_font.render('Next turn incoming...', True, self.WHITE)
+        self.screen.blit(sub, (center[0] - sub.get_width() // 2, center[1] + radius + 30))
 
     def draw_main(self):
         self.screen.fill(self.WHITE)
@@ -417,6 +447,8 @@ class UI:
         enemy_last_cards = enemy.drawn_cards[-5:]
         pending_player = [(item['card_name'], item['target_index']) for item in animator.pending_draws if not item['enemy']]
         pending_enemy = [(item['card_name'], item['target_index']) for item in animator.pending_draws if item['enemy']]
+        hide_player_hand = animator.turn_transition_running and not animator.turn_transition_enemy
+        hide_enemy_hand = animator.turn_transition_running and animator.turn_transition_enemy
         for i in range(5):
             card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), y_pos, box_width, box_height)
             enemy_card_slot_rect = pygame.Rect(start_x + i * (box_width + spacing), 20, box_width, box_height)
@@ -442,6 +474,8 @@ class UI:
 
             # Draw card image if it exists
             if i < len(last_cards):
+                if hide_player_hand:
+                    continue
                 if (last_cards[i], i) in pending_player:
                     continue
                 if animator.draw_animation_running and last_cards[i] == animator.draw_card_name and i == animator.draw_target_index:
@@ -471,6 +505,8 @@ class UI:
                     screen.blit(card_img, img_rect)
 
             if i < len(enemy_last_cards):
+                if hide_enemy_hand:
+                    continue
                 if (enemy_last_cards[i], i) in pending_enemy:
                     continue
                 card_key = card_name_to_filename(enemy_last_cards[i])
@@ -488,7 +524,22 @@ class UI:
                 card_name = enemy.drawn_cards[i]
                 self.draw_tooltip(self.tutorial.provide_tool_tip(card_name))
 
+        # Field card tooltips
+        for i, card in enumerate(player.turn_played_cards):
+            played_rect = pygame.Rect(0, 0, 100, 145)
+            played_rect.center = (WIDTH // 3 + 40 * i, HEIGHT // 2 + 100)
+            if played_rect.collidepoint(pygame.mouse.get_pos()):
+                self.draw_tooltip(self.tutorial.provide_tool_tip(card))
+        for i, card in enumerate(enemy.turn_played_cards):
+            played_rect = pygame.Rect(0, 0, 100, 145)
+            played_rect.center = (WIDTH // 3 + 40 * i, HEIGHT // 2 - 100)
+            if played_rect.collidepoint(pygame.mouse.get_pos()):
+                self.draw_tooltip(self.tutorial.provide_tool_tip(card))
+
         # --- Buttons ---
+        if animator.turn_transition_running:
+            self.draw_turn_change_indicator(animator)
+
         mouse_pos = pygame.mouse.get_pos()
 
         # Draw Card Button
