@@ -83,6 +83,10 @@ a = Analysis(
         ('sounds/Branch Wood Stress Cracking-SoundBible.com-2062541157.mp3', 'sounds'),
         ('sounds/Dry Fire Gun-SoundBible.com-2053652037.mp3', 'sounds'),
 
+        ('sounds/Button-SoundBible.com-1420500901.mp3', 'sounds'),
+        ('sounds/internal-mechanism-411760.mp3', 'sounds'),
+        ('sounds/moving-parts-411762.mp3', 'sounds'),
+        ('sounds/spring-mechanism-411759.mp3', 'sounds'),
     ],
     hiddenimports=[],
     hookspath=[],
