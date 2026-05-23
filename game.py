@@ -88,8 +88,10 @@ ui = UI(screen)
 animator = Animator(screen)
 player = Character()
 player.is_enemy = False
+player.animator = animator
 enemy = Character()
 enemy.is_enemy = True
+enemy.animator = animator
 
 player.draw_hook = lambda new_cards, actor: enqueue_draw_animations_for_new_cards(actor, new_cards)
 enemy.draw_hook = lambda new_cards, actor: enqueue_draw_animations_for_new_cards(actor, new_cards)

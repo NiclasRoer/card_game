@@ -45,6 +45,10 @@ class Animator:
         self.toss_card_start_time = 0
         self.toss_queue = []
 
+        # Glow effects
+        self.glows = {}  # {glow_type: (start_time, duration)}
+        self.glow_duration = 500  # milliseconds
+
         self.screen = screen
 
     def prepare_animation(self, image, runtime, start_pos, end_pos, end_rotation=0):
@@ -230,3 +234,33 @@ class Animator:
 
         if progress >= 1.0:
             self.animation_running = False
+
+    def trigger_glow(self, glow_type):
+        """Trigger a glow effect for a specific counter type.
+        
+        Args:
+            glow_type: string identifier (e.g., 'player_life', 'enemy_shield', 'player_poison', etc.)
+        """
+        self.glows[glow_type] = pygame.time.get_ticks()
+
+    def is_glowing(self, glow_type):
+        """Check if a glow effect is currently active."""
+        if glow_type not in self.glows:
+            return False, 0.0
+        
+        elapsed = pygame.time.get_ticks() - self.glows[glow_type]
+        if elapsed >= self.glow_duration:
+            del self.glows[glow_type]
+            return False, 0.0
+        
+        # Return progress from 1.0 to 0.0 (fade out)
+        progress = 1.0 - (elapsed / self.glow_duration)
+        return True, progress
+
+    def get_glow_color(self, progress, base_color=(255, 255, 255)):
+        """Get the glow color based on progress (1.0 to 0.0).
+        
+        Returns a color that blends from bright glow to base color.
+        """
+        glow_brightness = int(100 * progress)  # Additional brightness from glow
+        return tuple(min(255, c + glow_brightness) for c in base_color)

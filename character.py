@@ -9,6 +9,7 @@ class Character:
         self.deck = Deck()
         self.draw_hook = None
         self.is_enemy = False
+        self.animator = None  # Will be set from game.py
         self.reset_character(begin_duel=False)
         self.process_conditions()
 
@@ -41,10 +42,28 @@ class Character:
             self.deck.shuffle()
             self.drawn_cards.extend(self.processes_drawing(3))
 
-    def end_turn(self, enemy):
-        enemy.life -= enemy.poison
+    def trigger_glow_for(self, stat, target_self=True):
+        if not self.animator:
+            return
+        if target_self:
+            glow_target = 'enemy' if self.is_enemy else 'player'
+        else:
+            glow_target = 'player' if self.is_enemy else 'enemy'
+        self.animator.trigger_glow(f"{glow_target}_{stat}")
 
-        enemy.life = enemy.life - max(0, self.damage_value - enemy.shield)
+    def end_turn(self, enemy):
+        # Poison damage
+        if enemy.poison > 0:
+            enemy.life -= enemy.poison
+            self.trigger_glow_for('poison', target_self=False)
+            self.trigger_glow_for('life', target_self=False)
+
+        # Direct damage
+        damage_taken = max(0, self.damage_value - enemy.shield)
+        if damage_taken > 0:
+            enemy.life -= damage_taken
+            self.trigger_glow_for('life', target_self=False)
+
         # enemy.shield = max(0, enemy.shield - 2)
         self.poison = max(0, self.poison - 2)
 
@@ -91,28 +110,33 @@ class Character:
     def process_diamonds(self, value, enemy):
         modifier = self.field_suit_number if self.field_suit == 'Diamonds' else 0
 
-        if value < 10:
+        if value <= 10:
             if value % 2:
                 enemy.shield = max(0, enemy.shield - value)
                 self.damage_value = self.shield + self.fuel
+                self.trigger_glow_for('shield', target_self=False)
             else:
                 self.shield += 2 * (value + modifier * modifier)
+                self.trigger_glow_for('shield', target_self=True)
         else:
             stolen = enemy.shield - max(0, enemy.shield - 10 - modifier * modifier)
             if stolen > 0:
                 self.shield += stolen
                 enemy.shield -= stolen
+                self.trigger_glow_for('shield', target_self=True)
+                self.trigger_glow_for('shield', target_self=False)
 
 
     def process_clubs(self, value, enemy):
         modifier = self.field_suit_number if self.field_suit == 'Clubs' else 0
 
-        if value < 10:
+        if value <= 10:
             if value % 2:
                 enemy.poison += value + modifier * modifier
+                self.trigger_glow_for('poison', target_self=False)
             else:
                 self.poison -= value + modifier * modifier
-
+                self.trigger_glow_for('poison', target_self=True)
         else:
             if enemy.field_suit != '':
                 enemy.field_suit_number -= 1
@@ -122,7 +146,7 @@ class Character:
     def process_spades(self, value, enemy):
         modifier = self.field_suit_number if self.field_suit == 'Spades' else 0
 
-        if value < 10:
+        if value <= 10:
             if value % 2:
                 new_cards = self.processes_drawing(int(value / 2) - 1)
                 self.drawn_cards.extend(new_cards)
@@ -130,6 +154,7 @@ class Character:
                     self.draw_hook(new_cards, self)
             else:
                 enemy.fuel -= int(value / 2)
+                self.trigger_glow_for('fuel', target_self=False)
         else:
             if len(enemy.drawn_cards) >= 1:
                 enemy.drawn_cards.pop(random.randrange(len(enemy.drawn_cards) + modifier))
@@ -138,15 +163,18 @@ class Character:
     def process_hearts(self, value):
         modifier = self.field_suit_number if self.field_suit == 'Hearts' else 0
 
-        if value < 10:
+        if value <= 10:
             if value % 2:
                 self.life += value
+                self.trigger_glow_for('life', target_self=True)
             else:
                 self.fuel += int(value / 2)
+                self.trigger_glow_for('fuel', target_self=True)
         else:
             # Change to recycling cards
             self.life = int(self.life * 0.75 + modifier*modifier)
             self.damage_value = int(self.life * 0.33) + modifier*modifier + self.fuel
+            self.trigger_glow_for('life', target_self=True)
 
 
     def process_diamonds_reverse(self, value, enemy):

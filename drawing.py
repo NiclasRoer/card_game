@@ -368,15 +368,29 @@ class UI:
         lifebar_enemy = pygame.Rect(0, 0, 30, enemy.life)
         lifebar_enemy.topleft = (20, 25)
 
-        screen.blit(self.ui_poison, (70, HEIGHT - 5 - 20))
-        screen.blit(self.ui_shield, (120, HEIGHT - 5 - 20))
-        screen.blit(self.ui_fuel, (170, HEIGHT - 5 - 20))
-        screen.blit(self.ui_poison, (70, 2))
-        screen.blit(self.ui_shield, (120, 2))
-        screen.blit(self.ui_fuel, (170, 2))
+        # Draw icons with glow effects
+        self.draw_glowing_icon(self.ui_poison, 70, HEIGHT - 5 - 20, animator, 'player_poison')
+        self.draw_glowing_icon(self.ui_shield, 120, HEIGHT - 5 - 20, animator, 'player_shield')
+        self.draw_glowing_icon(self.ui_fuel, 170, HEIGHT - 5 - 20, animator, 'player_fuel')
+        self.draw_glowing_icon(self.ui_poison, 70, 2, animator, 'enemy_poison')
+        self.draw_glowing_icon(self.ui_shield, 120, 2, animator, 'enemy_shield')
+        self.draw_glowing_icon(self.ui_fuel, 170, 2, animator, 'enemy_fuel')
 
         pygame.draw.rect(screen, (255, 255, 255), lifebar_player, border_radius=10)
         pygame.draw.rect(screen, (255, 255, 255), lifebar_enemy, border_radius=10)
+
+        # Draw lifebar glows with expansion
+        is_glowing, glow_progress = animator.is_glowing('player_life')
+        if is_glowing:
+            glow_width = max(2, int(4 * glow_progress))
+            glow_rect = lifebar_player.inflate(int(12 * glow_progress), int(12 * glow_progress))
+            pygame.draw.rect(screen, (255, 215, 0), glow_rect, width=glow_width, border_radius=10)
+        
+        is_glowing, glow_progress = animator.is_glowing('enemy_life')
+        if is_glowing:
+            glow_width = max(2, int(4 * glow_progress))
+            glow_rect = lifebar_enemy.inflate(int(12 * glow_progress), int(12 * glow_progress))
+            pygame.draw.rect(screen, (255, 215, 0), glow_rect, width=glow_width, border_radius=10)
 
         # --- Exp bar ---
         for i in range(3):
@@ -588,6 +602,28 @@ class UI:
         value_text = font.render(text, True, color)
         text_rect = value_text.get_rect(center=(x, y))
         self.screen.blit(value_text, text_rect)
+
+    def draw_glowing_icon(self, icon, x, y, animator, glow_type):
+        """Draw an icon with an optional glow effect."""
+        is_glowing, glow_progress = animator.is_glowing(glow_type)
+        scale = 1.0
+        if is_glowing and glow_progress > 0:
+            scale += 0.15 * glow_progress
+
+        icon_size = icon.get_size()
+        scaled_size = (max(1, int(icon_size[0] * scale)), max(1, int(icon_size[1] * scale)))
+        scaled_icon = pygame.transform.smoothscale(icon, scaled_size)
+        scaled_pos = (x - (scaled_size[0] - icon_size[0]) // 2, y - (scaled_size[1] - icon_size[1]) // 2)
+
+        if is_glowing and glow_progress > 0:
+            glow_alpha = int(120 * glow_progress)
+            glow_color = (255, 235, 150, glow_alpha)
+            glow_rect = scaled_icon.get_rect(topleft=scaled_pos).inflate(int(20 * glow_progress), int(20 * glow_progress))
+            glow_surface = pygame.Surface(glow_rect.size, pygame.SRCALPHA)
+            pygame.draw.ellipse(glow_surface, glow_color, glow_surface.get_rect())
+            self.screen.blit(glow_surface, glow_rect.topleft)
+
+        self.screen.blit(scaled_icon, scaled_pos)
 
     def draw_mid_screen(self):
         # Text for the screen
